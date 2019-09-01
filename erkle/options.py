@@ -1,0 +1,121 @@
+
+from erkle.hooks import hook
+
+def handle_options(eobj,line):
+
+	tokens = line.split()
+
+	# 396
+	if tokens[1]=="396":
+		eobj.spoofed = tokens[3]
+		return True
+
+	# 004
+	if tokens[1]=="004":
+		eobj.hostname = tokens[3]
+		eobj.software = tokens[4]
+		return True
+
+	# MOTD begins
+	if tokens[1]=="375":
+		eobj.motd = []
+		return True
+
+	# MOTD content
+	if tokens[1]=="372":
+		tokens.pop(0)	# remove server name
+		tokens.pop(0)	# remove message type
+		tokens.pop(0)	# remove nickname
+		data = " ".join(tokens)
+		data = data[3:]
+		data = data.strip()
+		eobj.motd.append(data)
+		return True
+
+	# MOTD ends
+	if tokens[1]=="376":
+		motd = "\n".join(eobj.motd)
+		motd = motd.strip()
+		hook.call("motd",eobj,motd)
+		return True
+
+	# 005
+	if tokens[1]=="005":
+		tokens.pop(0)	# remove server
+		tokens.pop(0)	# remove message type
+		tokens.pop(0)	# remove nick
+		for ent in tokens:
+			if ":" in ent:
+				# no more options in the list sent
+				break
+			if '=' in ent:
+				parsed = ent.split('=')
+
+				if parsed[0].lower()=="casemapping":
+					eobj.casemapping=parsed[1]
+					continue
+
+				if parsed[0].lower()=="chanmodes":
+					eobj.chanmodes = parsed[1].split(',')
+					continue
+
+				if parsed[0].lower()=="prefix":
+					data = parsed[1].split(")")
+					data[0] = data[0][1:]
+
+					plevels = data[0].split()
+					psymbols = data[1].split()
+
+					table = []
+					counter = 0
+					for p in plevels:
+						ent = [p,psymbols[counter]]
+						table.append(ent)
+						counter = counter + 1
+
+					eobj.prefix = table
+
+					continue
+
+				if parsed[0].lower()=="chantypes":
+					eobj.chantypes = parsed[1].split(',')
+					continue
+				if parsed[0].lower()=="modes":
+					eobj.modes=int(parsed[1])
+					continue
+				if parsed[0].lower()=="maxtargets":
+					eobj.maxtargets=int(parsed[1])
+					continue
+				if parsed[0].lower()=="awaylen":
+					eobj.awaylen=int(parsed[1])
+					continue
+				if parsed[0].lower()=="kicklen":
+					eobj.kicklen=int(parsed[1])
+					continue
+				if parsed[0].lower()=="topiclen":
+					eobj.topiclen=int(parsed[1])
+					continue
+				if parsed[0].lower()=="chanellen":
+					eobj.chanellen=int(parsed[1])
+					continue
+				if parsed[0].lower()=="nicklen":
+					eobj.nicklen=int(parsed[1])
+					continue
+				if parsed[0].lower()=="chanlimit":
+					eobj.chanlimit = parsed[1].split(',')
+					continue
+				if parsed[0].lower()=="maxnicklen":
+					eobj.maxnicklen=int(parsed[1])
+					continue
+				if parsed[0].lower()=="maxchannels":
+					eobj.maxchannels=int(parsed[1])
+					continue
+				if parsed[0].lower()=="network":
+					eobj.network = parsed[1]
+					continue
+				if parsed[0].lower()=="cmds":
+					eobj.commands = parsed[1].split(',')
+					continue
+			eobj.options.append(ent)
+		return True
+	return False
