@@ -47,6 +47,9 @@ class ErkleClient:
 	def action(self,target,msg):
 		self.send("PRIVMSG "+target+" \x01ACTION"+msg+"\x01")
 
+	def notice(self,target,msg):
+		self.send("NOTICE "+target+" "+msg)
+
 	def __init__(self,nickname,username,realname,server,port=6667,password="",usessl=False):
 		self.nickname = nickname
 		self.username = username
