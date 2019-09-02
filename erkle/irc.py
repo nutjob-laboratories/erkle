@@ -90,6 +90,8 @@ class ErkleClient:
 
 		self.users = defaultdict(list)	# List of channel users
 
+		self.topic = {}					# Channel topics
+
 	def connect(self):
 		self.run()
 
@@ -106,6 +108,9 @@ class ErkleClient:
 			self.connection = ssl.wrap_socket(self.connection)
 
 		hook.call("connect",self)
+
+		# Get the server to send nicks/hostmasks
+		self.send("PROTOCTL UHNAMES")
 
 		""" Send the server password, if there is one"""
 		if self.password:

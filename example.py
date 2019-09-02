@@ -3,6 +3,13 @@ from erkle import *
 
 import sys
 
+@hook.event('topic')
+def evtopic(connection,nickname,host,channel,topic):
+	if topic:
+		print(nickname+" set the topic in "+channel+" to "+topic)
+	else:
+		print(nickname+" set the topic in "+channel+" to nothing")
+
 @hook.event("back")
 def evb(connection):
 	print("you are back")

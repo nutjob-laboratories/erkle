@@ -4,6 +4,60 @@ from erkle.hooks import hook
 def handle_options(eobj,line):
 
 	tokens = line.split()
+	#print(line)
+
+	if tokens[1].lower()=="topic":
+		user = tokens.pop(0)
+		user = user[1:]
+
+		parsed = user.split('!')
+		nickname = parsed[0]
+		host = parsed[1]
+
+		tokens.pop(0)	# remove message type
+
+		channel = tokens.pop(0)
+
+		topic = ' '.join(tokens)
+		topic = topic[1:]
+
+		if not len(topic)>0: topic = None
+
+		eobj.topic[channel] = topic
+		hook.call("topic",eobj,nickname,host,channel,topic)
+
+		return True
+
+	# 331 no topic
+	if tokens[1]=="331":
+		tokens.pop(0)	# remove server name
+		tokens.pop(0)	# remove message type
+		tokens.pop(0)	# remove nickname
+
+		channel = tokens.pop(0)
+
+		eobj.topic[channel] = ''
+		hook.call("topic",eobj,eobj.hostname,eobj.hostname,channel,None)
+		return True
+
+	# 332 topic
+	if tokens[1]=="332":
+		tokens.pop(0)	# remove server name
+		tokens.pop(0)	# remove message type
+		tokens.pop(0)	# remove nickname
+
+		channel = tokens.pop(0)
+
+		topic = " ".join(tokens)
+		topic = topic[1:]
+
+		if len(topic)>0:
+			eobj.topic[channel] = topic
+			hook.call("topic",eobj,eobj.hostname,eobj.hostname,channel,topic)
+		else:
+			eobj.topic[channel] = ''
+			hook.call("topic",eobj,eobj.hostname,eobj.hostname,channel,None)
+		return True
 
 	# 396
 	if tokens[1]=="396":
