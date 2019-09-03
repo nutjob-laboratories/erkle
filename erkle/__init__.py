@@ -1,4 +1,4 @@
 from .hooks import hook
 from .irc import ErkleClient
 
-ERKLE_VERSION = "0.01"
+ERKLE_VERSION = "0.011"

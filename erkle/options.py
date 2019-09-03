@@ -6,6 +6,41 @@ def handle_options(eobj,line):
 	tokens = line.split()
 	#print(line)
 
+	if tokens[1].lower()=="mode":
+		user = tokens.pop(0)
+		user = user[1:]
+
+		parsed = user.split('!')
+		if len(parsed)==2:
+			nickname = parsed[0]
+			host = parsed[1]
+		else:
+			nickname = eobj.hostname
+			host = eobj.hostname
+
+		tokens.pop(0)	# remove message type
+
+		target = tokens.pop(0)
+
+		mode = ' '.join(tokens)
+		mode = mode.replace(':','',1)
+
+		hook.call("mode",eobj,nickname,host,target,mode)
+
+		return True
+
+	# chanmodeis
+	if tokens[1]=="324":
+		tokens.pop(0)	# remove server name
+		tokens.pop(0)	# remove message type
+
+		channel = tokens.pop(0)
+		mode = ' '.join(tokens)
+		mode = mode.replace(':','',1)
+
+		hook.call("mode",eobj,eobj.hostname,eobj.hostname,target,mode)
+		return True
+
 	if tokens[1].lower()=="topic":
 		user = tokens.pop(0)
 		user = user[1:]
