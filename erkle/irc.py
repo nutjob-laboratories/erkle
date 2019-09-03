@@ -10,7 +10,7 @@ except ImportError:
 	SSL_AVAILABLE = False
 
 from erkle.hooks import hook
-from erkle.options import handle_options
+from erkle.information import handle_information
 from erkle.users import handle_users
 
 class ErkleClient:
@@ -145,7 +145,7 @@ class ErkleClient:
 		tokens = line.split()
 
 		# Server options
-		if handle_options(self,line): return
+		if handle_information(self,line): return
 
 		# User management
 		if handle_users(self,line): return

@@ -1,7 +1,7 @@
 
 from erkle.hooks import hook
 
-def handle_options(eobj,line):
+def handle_information(eobj,line):
 
 	tokens = line.split()
 	#print(line)

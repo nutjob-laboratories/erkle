@@ -3,6 +3,10 @@ from erkle import *
 
 import sys
 
+@hook.event('mode')
+def evmode(connection,nickname,host,target,mode):
+	print(nickname+" set mode "+mode+" on "+target)
+
 @hook.event('topic')
 def evtopic(connection,nickname,host,channel,topic):
 	if topic:
