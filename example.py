@@ -3,6 +3,20 @@ from erkle import *
 
 import sys
 
+@hook.event('kick')
+def evkick(connection,nickname,host,channel,target,message):
+	if message:
+		print(nickname+" kicked "+target+" from "+channel+": "+message)
+	else:
+		print(nickname+" kicked "+target+" from "+channel)
+
+@hook.event('kicked')
+def evkick(connection,nickname,host,channel,message):
+	if message:
+		print(nickname+" kicked you from "+channel+": "+message)
+	else:
+		print(nickname+" kicked you from "+channel)
+
 @hook.event('mode')
 def evmode(connection,nickname,host,target,mode):
 	print(nickname+" set mode "+mode+" on "+target)
@@ -61,6 +75,11 @@ def fed(connection,nickname,host,channel,message):
 @hook.event("private")
 def fed(connection,nickname,host,message):
 	print("private "+nickname+" "+message)
+
+@hook.event("private")
+def fed(connection,nickname,host,message):
+	if message=="quit":
+		sys.exit()
 
 @hook.event("ping")
 def png(connection):

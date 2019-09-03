@@ -5,6 +5,53 @@ def handle_users(eobj,line):
 
 	tokens = line.split()
 
+	# KICK
+	if tokens[1].lower()=="kick":
+		user = tokens.pop(0)
+		user = user[1:]
+
+		parsed = user.split("!")
+		nickname = parsed[0]
+		host = parsed[1]
+
+		tokens.pop(0)	# remove message type
+
+		channel = tokens.pop(0)
+		target = tokens.pop(0)
+
+		msg = ' '.join(tokens)
+		msg = msg[1:]
+		if msg==nickname: msg = None
+
+		if target==eobj.nickname:
+			# client was the one kicked
+			del eobj.users[channel]
+			hook.call("kicked",eobj,nickname,host,channel,msg)
+		else:
+			# other user kicked
+			hook.call("kick",eobj,nickname,host,channel,target,msg)
+			
+			# Remove user from userlist
+			cleaned = []
+			for u in eobj.users[channel]:
+				cu = u.replace('@','')
+				cu = cu.replace('+','')
+				cu = cu.replace('~','')
+				cu = cu.replace('%','')
+				cu = cu.replace('&','')
+
+				parsed = cu.split('!')
+				if len(parsed)==2:
+					if parsed[0].lower()!=target.lower(): cleaned.append(u)
+				else:
+					if u.lower()!=target.lower(): cleaned.append(u)
+			eobj.users[channel] = cleaned
+
+			# Resend the new channel user list
+			hook.call("names",eobj,channel,eobj.users[channel])
+
+		return True
+
 	# RPL_NOWAWAY
 	if tokens[1]=="306":
 		hook.call("away",eobj,self.nick,None)
@@ -210,7 +257,7 @@ def handle_users(eobj,line):
 	if tokens[1]=="366":
 		channel = tokens[3]
 		hook.call("names",eobj,channel,eobj.users[channel])
-		return
+		return True
 
 	# Incoming user list
 	if tokens[1]=="353":
@@ -221,7 +268,7 @@ def handle_users(eobj,line):
 		users = parsed[1].split()
 
 		if channel in eobj.users:
-			eobj.users[channel] = eobj.users + users
+			eobj.users[channel] = eobj.users[channel] + users
 			eobj.users[channel] = list(dict.fromkeys(eobj.users[channel]))
 			return True
 		else:
@@ -240,6 +287,11 @@ def handle_users(eobj,line):
 		host = p[1]
 
 		hook.call("join",eobj,nickname,host,channel)
+
+		if channel in eobj.users:
+			eobj.users[channel].append(user)
+			eobj.users[channel] = list(dict.fromkeys(eobj.users[channel]))
+
 		return True
 
 	return False
