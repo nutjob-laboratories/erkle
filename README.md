@@ -1,3 +1,7 @@
+<p align="center">
+	<img src="https://github.com/nutjob-laboratories/erkle/raw/master/images/logo_300x100.png">
+</p>
+
 # erkle
 An easy to use, event-driven, low-level IRC library for Python 3. It is being written as a replacement for Twisted in the [Erk IRC Client](https://github.com/nutjob-laboratories/erk).
 
