@@ -50,6 +50,12 @@ class ErkleClient:
 	def notice(self,target,msg):
 		self.send("NOTICE "+target+" "+msg)
 
+	def kick(self,target,channel,reason=None):
+		if reason:
+			self.send("KICK "+channel+" "+target+" :"+reason)
+		else:
+			self.send("KICK "+channel+" "+target+" :")
+
 	def __init__(self,nickname,username,realname,server,port=6667,password="",usessl=False):
 		self.nickname = nickname
 		self.username = username
