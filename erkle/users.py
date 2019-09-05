@@ -26,6 +26,24 @@ def handle_users(eobj,line):
 
 	tokens = line.split()
 
+	# INVITE
+	if tokens[1].lower()=="invite":
+		user = tokens.pop(0)
+		user = user[1:]
+
+		parsed = user.split("!")
+		nickname = parsed[0]
+		host = parsed[1]
+
+		tokens.pop(0)	# remove message type
+		tokens.pop(0)	# remove nick
+
+		channel = tokens.pop(0)
+		channel = channel[1:]
+
+		hook.call("invite",eobj,nickname,host,channel)
+		return True
+
 	# KICK
 	if tokens[1].lower()=="kick":
 		user = tokens.pop(0)
