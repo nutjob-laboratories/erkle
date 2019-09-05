@@ -33,7 +33,7 @@ def fed(connection,nickname,host,channel,message):
 
 @hook.event("private")
 def fed(connection,nickname,host,message):
-	if message=="quit":
+	if message.lower()=="quit":
 		sys.exit()
 
 c = ErkleClient("mybot","mybotu","my bot","localhost",6667,None,False)
