@@ -1,110 +1,40 @@
+# MIT License
+
+# Copyright (c) 2019 Dan Hetrick
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
 from erkle import *
 
+import erkle.events.dump
+
 import sys
-
-@hook.event('kick')
-def evkick(connection,nickname,host,channel,target,message):
-	if message:
-		print(nickname+" kicked "+target+" from "+channel+": "+message)
-	else:
-		print(nickname+" kicked "+target+" from "+channel)
-
-@hook.event('kicked')
-def evkick(connection,nickname,host,channel,message):
-	if message:
-		print(nickname+" kicked you from "+channel+": "+message)
-	else:
-		print(nickname+" kicked you from "+channel)
-
-@hook.event('mode')
-def evmode(connection,nickname,host,target,mode):
-	print(nickname+" set mode "+mode+" on "+target)
-
-@hook.event('topic')
-def evtopic(connection,nickname,host,channel,topic):
-	if topic:
-		print(nickname+" set the topic in "+channel+" to "+topic)
-	else:
-		print(nickname+" set the topic in "+channel+" to nothing")
-
-@hook.event("back")
-def evb(connection):
-	print("you are back")
-
-@hook.event("away")
-def awy(connection,nickname,reason):
-	if nickname==connection.nickname:
-		print("you have been set as away")
-	else:
-		if reason:
-			print(nickname+" is away ("+reason+")")
-		else:
-			print(nickname+" is away")
-
-@hook.event("notice")
-def ntc(connection,sender,message):
-	print("notice: "+sender+": "+message)
-
-@hook.event("motd")
-def mt(connection,motd):
-	print(motd)
-
-@hook.event("welcome")
-def con(connection):
-	connection.send("JOIN #quirc")
-
-@hook.event("connect")
-def bla(connection):
-	print("connected")
-
-@hook.event("nick-taken")
-def glarp(connection,newnick):
-	print("nick changed to "+newnick)
-
-@hook.event("action")
-def fed(connection,nickname,host,target,message):
-	print(nickname+" "+message)
 
 @hook.event("public")
 def fed(connection,nickname,host,channel,message):
-	print(channel+" "+nickname+" "+message)
 	if message.lower()=="quit":
 		sys.exit()
-
-@hook.event("private")
-def fed(connection,nickname,host,message):
-	print("private "+nickname+" "+message)
 
 @hook.event("private")
 def fed(connection,nickname,host,message):
 	if message=="quit":
 		sys.exit()
 
-@hook.event("ping")
-def png(connection):
-	print("ping")
-
-@hook.event("nick")
-def ni(connection,nickname,host,newnick):
-	print(nickname+" is now known as "+newnick)
-
-@hook.event("names")
-def evn(connection,channel,userlist):
-	print(userlist)
-
-@hook.event("quit")
-def evq(connection,nickname,host,reason):
-	print(nickname+" quit")
-
-@hook.event("part")
-def evp(connection,nickname,host,channel,reason):
-	print(nickname+" left "+channel)
-
-@hook.event("join")
-def evj(connection,nickname,host,channel):
-	print(nickname+" joined "+channel)
-
 c = ErkleClient("mybot","mybotu","my bot","localhost",6667,None,False)
 c.connect()
-
