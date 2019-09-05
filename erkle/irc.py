@@ -2,6 +2,7 @@
 import socket
 import sys
 from collections import defaultdict
+import string
 
 SSL_AVAILABLE = True
 try:
@@ -46,39 +47,50 @@ class ErkleClient:
 		self.connection.send(bytes(data + "\r\n", "utf-8"))
 
 	def join(self,channel,key=None):
+		if not self.connected: return
 		if key:
 			self.send("JOIN "+channel+" "+key)
 		else:
 			self.send("JOIN "+channel)
 
 	def part(self,channel,reason=None):
+		if not self.connected: return
 		if reason:
 			self.send("PART "+channel+" "+reason)
 		else:
 			self.send("PART "+channel)
 
 	def quit(self,reason=None):
+		if not self.connected: return
 		if reason:
 			self.send("QUIT")
 		else:
 			self.send("QUIT "+reason)
 
 	def msg(self,target,msg):
+		if not self.connected: return
 		self.send("PRIVMSG "+target+" "+msg)
 
 	def action(self,target,msg):
+		if not self.connected: return
 		self.send("PRIVMSG "+target+" \x01ACTION"+msg+"\x01")
 
 	def notice(self,target,msg):
+		if not self.connected: return
 		self.send("NOTICE "+target+" "+msg)
 
 	def kick(self,target,channel,reason=None):
+		if not self.connected: return
 		if reason:
 			self.send("KICK "+channel+" "+target+" :"+reason)
 		else:
 			self.send("KICK "+channel+" "+target+" :")
 
-	def __init__(self,nickname,username,realname,server,port=6667,password="",usessl=False):
+	def invite(self,user,channel):
+		if not self.connected: return
+		self.send("INVITE "+user+" "+channel)
+
+	def __init__(self,nickname,username,realname,server,port=6667,password=None,usessl=False,encoding="utf-8"):
 		self.nickname = nickname
 		self.username = username
 		self.realname = realname
@@ -86,7 +98,9 @@ class ErkleClient:
 		self.port = port
 		self.password = password
 		self.usessl = usessl
+		self.encoding = encoding
 
+		self.connected = False
 		self.current_nickname = nickname
 
 		# If SSL isn't available, set self.usessl to false
@@ -153,7 +167,7 @@ class ErkleClient:
 		while True:
 			""" Get incoming sercer data """
 			try:
-				self._buffer = self._buffer + self.connection.recv(4096).decode("utf-8")
+				self._buffer = self._buffer + self.connection.recv(4096).decode(self.encoding)
 			except socket.error:
 				pass
 
@@ -197,6 +211,7 @@ class ErkleClient:
 		# Server welcome
 		if tokens[1]=="001":
 			hook.call("welcome",self)
+			self.connected = True
 			return
 
 		# Chat message
