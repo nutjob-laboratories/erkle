@@ -26,6 +26,19 @@ import erkle.events.dump
 
 import sys
 
+@hook.event("list")
+def flarb(connection,chanlist):
+	for e in chanlist:
+		if e[2]:
+			print(e[0]+" ("+str(e[1])+" users) - "+e[2])
+		else:
+			print(e[0]+" ("+str(e[1])+" users)")
+
+@hook.event("private")
+def fed(connection,nickname,host,message):
+	if message.lower()=="list":
+		connection.channels()
+
 @hook.event("whois")
 def fed(connection,nickname,user,host,realname,server,idle,signon,channels,privs):
 	if privs:

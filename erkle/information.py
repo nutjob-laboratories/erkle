@@ -27,6 +27,42 @@ def handle_information(eobj,line):
 	tokens = line.split()
 	#print(line)
 
+	# listend
+	if tokens[1]=="323":
+		hook.call("list",eobj,eobj.channels)
+		return True
+
+	# liststart
+	if tokens[1]=="321":
+		eobj.channels = []
+		return True
+
+	# list
+	if tokens[1]=="322":
+		
+		tokens.pop(0)	# remove server
+		tokens.pop(0)	# reove message type
+		tokens.pop(0)	# remove nick
+
+		channel = tokens.pop(0)
+		usercount = tokens.pop(0)
+
+		try:
+			usercount = int(usercount)
+		except:
+			usercount = 0
+
+		tokens.pop(0)	# remove colon
+
+		if len(tokens)>0:
+			topic = ' '.join(tokens)
+		else:
+			topic = None
+
+		c = [channel,usercount,topic]
+		eobj.channels.append(c)
+		return True
+
 	if tokens[1].lower()=="mode":
 		user = tokens.pop(0)
 		user = user[1:]
