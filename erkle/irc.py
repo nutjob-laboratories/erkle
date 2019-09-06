@@ -36,6 +36,7 @@ except ImportError:
 from erkle.hooks import hook
 from erkle.information import handle_information
 from erkle.users import handle_users
+from erkle.errors import handle_errors
 
 class ErkleClient:
 
@@ -203,6 +204,9 @@ class ErkleClient:
 	def handle(self,line):
 
 		tokens = line.split()
+
+		# Error management
+		if handle_errors(self,line): return
 
 		# Server options
 		if handle_information(self,line): return

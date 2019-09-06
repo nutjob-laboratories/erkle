@@ -26,11 +26,17 @@ import erkle.events.dump
 
 import sys
 
+@hook.event("error")
+def everr(connection,code,target,reason):
+	if target!=None:
+		print("ERROR: "+code+" "+target+" "+reason)
+	else:
+		print("ERROR: "+code+" "+reason)
+
 @hook.event("private")
 def fed(connection,nickname,host,message):
 	if message.lower()=="beep":
-		connection.quit()
-		sys.exit()
+		connection.msg("#blorple","fnagnits man")
 
 @hook.event("private")
 def fed(connection,nickname,host,message):
