@@ -22,9 +22,134 @@
 
 from erkle.hooks import hook
 
+class WhoisEntry:
+	def __init__(self,nickname):
+		self.nickname = nickname
+		self.user = ""
+		self.host = ""
+		self.realname = ""
+		self.privs = None
+		self.idle = 0
+		self.signon = "0"
+		self.channels = []
+		self.server = ""
+
 def handle_users(eobj,line):
 
 	tokens = line.split()
+
+	# ENDOFWHOIS
+	if tokens[1]=="318":
+		tokens.pop(0)	# remove server
+		tokens.pop(0)	# reove message type
+		tokens.pop(0)	# remove nick
+
+		nickname = tokens.pop(0)
+
+		if nickname in eobj.whois:
+			whois = eobj.whois[nickname]
+
+			hook.call("whois",eobj,whois.nickname,whois.user,whois.host,whois.realname,whois.server,whois.idle,str(whois.signon),whois.channels,whois.privs)
+			del eobj.whois[nickname]
+
+		return True
+
+	# WHOISUSER
+	if tokens[1]=="311":
+		tokens.pop(0)	# remove server
+		tokens.pop(0)	# reove message type
+		tokens.pop(0)	# remove nick
+
+		nickname = tokens.pop(0)
+		username = tokens.pop(0)
+		host = tokens.pop(0)
+
+		tokens.pop(0)	# remove asterix
+
+		realname = ' '.join(tokens)
+		realname = realname [1:]
+
+		eobj.whois[nickname] = WhoisEntry(nickname)
+		eobj.whois[nickname].user = username
+		eobj.whois[nickname].host = host
+		eobj.whois[nickname].realname = realname
+
+		return True
+
+	# WHOISSERVER
+	if tokens[1]=="312":
+		tokens.pop(0)	# remove server
+		tokens.pop(0)	# reove message type
+		tokens.pop(0)	# remove nick
+
+		nickname = tokens.pop(0)
+
+		server = tokens.pop(0)
+		info = ' '.join(tokens)
+		info = info[1:]
+
+		if nickname in eobj.whois:
+			eobj.whois[nickname].server = f"{server} ({info})"
+
+		return True
+
+	# WHOISOPERATOR
+	if tokens[1]=="313":
+		tokens.pop(0)	# remove server
+		tokens.pop(0)	# reove message type
+		tokens.pop(0)	# remove nick
+
+		nickname = tokens.pop(0)
+
+		privs = ' '.join(tokens)
+		privs = privs[1:]
+
+		if nickname in eobj.whois:
+			eobj.whois[nickname].privs = nickname + " " + privs
+
+		return True
+
+	# WHOISIDLE
+	if tokens[1]=="317":
+		tokens.pop(0)	# remove server
+		tokens.pop(0)	# reove message type
+		tokens.pop(0)	# remove nick
+
+		nickname = tokens.pop(0)
+
+		idle = tokens.pop(0)
+		signon = tokens.pop(0)
+
+		try:
+			idle = int(idle)
+		except:
+			idle = 0
+
+		try:
+			signon = int(signon)
+		except:
+			signon = 0
+
+		if nickname in eobj.whois:
+			eobj.whois[nickname].idle = idle
+			eobj.whois[nickname].signon = signon
+
+		return True
+
+	# WHOISCHANNELS
+	if tokens[1]=="319":
+		tokens.pop(0)	# remove server
+		tokens.pop(0)	# reove message type
+		tokens.pop(0)	# remove nick
+
+		nickname = tokens.pop(0)
+		chans = ' '.join(tokens)
+		chans = chans[1:]
+		channel = chans.split(' ')
+
+		if nickname in eobj.whois:
+			eobj.whois[nickname].channels = channel
+		return True
 
 	# INVITE
 	if tokens[1].lower()=="invite":

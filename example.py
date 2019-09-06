@@ -26,6 +26,28 @@ import erkle.events.dump
 
 import sys
 
+@hook.event("whois")
+def fed(connection,nickname,user,host,realname,server,idle,signon,channels,privs):
+	if privs:
+		print(nickname,user,host,realname,server,idle,signon,channels,privs)
+	else:
+		print(nickname,user,host,realname,server,idle,signon,channels)
+
+@hook.event("public")
+def fed(connection,nickname,host,channel,message):
+	if message.lower()=="me":
+		connection.send("WHOIS spampa")
+
+@hook.event("private")
+def fed(connection,nickname,host,message):
+	if message.lower()=="me":
+		connection.send("WHOIS spampa")
+
+@hook.event("private")
+def fed(connection,nickname,host,message):
+	if message.lower()=="you":
+		connection.send("WHOIS mybot")
+
 @hook.event("public")
 def fed(connection,nickname,host,channel,message):
 	if message.lower()=="quit":

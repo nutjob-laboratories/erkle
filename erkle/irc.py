@@ -90,6 +90,10 @@ class ErkleClient:
 		if not self.connected: return
 		self.send("INVITE "+user+" "+channel)
 
+	def whois(self,user):
+		if not self.connected: return
+		self.send("WHOIS "+user)
+
 	def __init__(self,nickname,username,realname,server,port=6667,password=None,usessl=False,encoding="utf-8"):
 		self.nickname = nickname
 		self.username = username
@@ -133,6 +137,8 @@ class ErkleClient:
 		self.users = defaultdict(list)	# List of channel users
 
 		self.topic = {}					# Channel topics
+
+		self.whois = {}					# WHOIS data buffer
 
 	def connect(self):
 		self.run()
