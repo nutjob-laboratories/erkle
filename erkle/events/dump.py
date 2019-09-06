@@ -22,6 +22,13 @@
 
 from erkle import *
 
+@hook.event("error")
+def everr(connection,code,target,reason):
+	if target!=None:
+		print("ERROR: "+code+" "+target+" - "+reason)
+	else:
+		print("ERROR: "+code+" - "+reason)
+
 @hook.event("list")
 def evlist(connection,chanlist):
 	print("Begin channel list for "+connection.server+":"+str(connection.port))
