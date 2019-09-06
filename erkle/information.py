@@ -29,12 +29,12 @@ def handle_information(eobj,line):
 
 	# listend
 	if tokens[1]=="323":
-		hook.call("list",eobj,eobj.channels)
+		hook.call("list",eobj,eobj._channels)
 		return True
 
 	# liststart
 	if tokens[1]=="321":
-		eobj.channels = []
+		eobj._channels = []
 		return True
 
 	# list
@@ -60,7 +60,7 @@ def handle_information(eobj,line):
 			topic = None
 
 		c = [channel,usercount,topic]
-		eobj.channels.append(c)
+		eobj._channels.append(c)
 		return True
 
 	if tokens[1].lower()=="mode":

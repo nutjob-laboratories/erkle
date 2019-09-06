@@ -22,6 +22,30 @@
 
 from erkle import *
 
+@hook.event("list")
+def evlist(connection,chanlist):
+	print("Begin channel list for "+connection.server+":"+str(connection.port))
+	for e in chanlist:
+		if e[1]>1:
+			numusers = str(e[1])+" users"
+		else:
+			numusers = str(e[1])+" user"
+		if e[2]:
+			print(e[0]+" ("+numusers+") - "+e[2])
+		else:
+			print(e[0]+" ("+numusers+")")
+	print("End channel list")
+
+@hook.event("whois")
+def evwhois(connection,nickname,user,host,realname,server,idle,signon,channels,privs):
+	print(f"{nickname} {user}@{host} ({realname})")
+	print(f"{nickname} is connected to {server}")
+	print(f"{nickname} has been {str(idle)} for idle second(s)")
+	print(f"{nickname} connected on {signon}")
+	if len(channels)>0: print(f"{nickname} is in {','.join(channels)}")
+	if privs:
+		print(privs)
+
 @hook.event('kick')
 def evkick(connection,nickname,host,channel,target,message):
 	if message:

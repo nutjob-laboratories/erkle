@@ -144,7 +144,7 @@ class ErkleClient:
 
 		self.whois = {}					# WHOIS data buffer
 
-		self.channels = []				# Channel list buffer
+		self._channels = []				# Channel list buffer
 
 	def connect(self):
 		self.run()
