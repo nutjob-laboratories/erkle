@@ -30,7 +30,7 @@ import sys
 def fed(connection,nickname,host,message):
 	if message.lower()=="beep":
 		connection.quit()
-		#sys.exit()
+		sys.exit()
 
 @hook.event("private")
 def fed(connection,nickname,host,message):
@@ -40,11 +40,13 @@ def fed(connection,nickname,host,message):
 @hook.event("public")
 def fed(connection,nickname,host,channel,message):
 	if message.lower()=="quit":
+		connection.quit()
 		sys.exit()
 
 @hook.event("private")
 def fed(connection,nickname,host,message):
 	if message.lower()=="quit":
+		connection.quit()
 		sys.exit()
 
 c = ErkleClient("mybot","mybotu","my bot","localhost",6667,None,False)

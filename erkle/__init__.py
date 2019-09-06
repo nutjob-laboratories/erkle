@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+__all__ = ['hook','ErkleClient','ERKLE_VERSION']
+
 from .hooks import hook
 from .irc import ErkleClient
 

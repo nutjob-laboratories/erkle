@@ -1,17 +1,3 @@
-
-import socket
-import sys
-from collections import defaultdict
-import string
-
-import threading
-
-SSL_AVAILABLE = True
-try:
-	import ssl
-except ImportError:
-	SSL_AVAILABLE = False
-
 # MIT License
 
 # Copyright (c) 2019 Dan Hetrick
@@ -33,6 +19,19 @@ except ImportError:
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
+import socket
+import sys
+from collections import defaultdict
+import string
+
+import threading
+
+SSL_AVAILABLE = True
+try:
+	import ssl
+except ImportError:
+	SSL_AVAILABLE = False
 
 from erkle.hooks import hook
 from erkle.information import handle_information
