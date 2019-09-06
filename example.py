@@ -28,6 +28,12 @@ import sys
 
 @hook.event("private")
 def fed(connection,nickname,host,message):
+	if message.lower()=="beep":
+		connection.quit()
+		#sys.exit()
+
+@hook.event("private")
+def fed(connection,nickname,host,message):
 	if message.lower()=="list":
 		connection.channels()
 

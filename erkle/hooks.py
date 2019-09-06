@@ -23,6 +23,10 @@
 class HookHandler:
 	def __init__(self):
 		self._handlers = {}
+		self._threads = []
+
+	def add(self,thread):
+		self._threads.append(thread)
 
 	def call(self,type,*args):
 		if type in self._handlers:

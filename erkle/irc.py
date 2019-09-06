@@ -4,6 +4,8 @@ import sys
 from collections import defaultdict
 import string
 
+import threading
+
 SSL_AVAILABLE = True
 try:
 	import ssl
@@ -60,9 +62,9 @@ class ErkleClient:
 		else:
 			self.send("PART "+channel)
 
-	def quit(self,reason=None):
+	def quit(self,reason=''):
 		if not self.connected: return
-		if reason:
+		if reason=='':
 			self.send("QUIT")
 		else:
 			self.send("QUIT "+reason)
@@ -148,6 +150,11 @@ class ErkleClient:
 
 	def connect(self):
 		self.run()
+
+	def spawn(self):
+		t = threading.Thread(name=f"{self.server}:{str(self.port)}",target=self.run)
+		hook.add(t)
+		t.start()
 
 	def run(self):
 
