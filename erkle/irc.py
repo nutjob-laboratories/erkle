@@ -76,6 +76,8 @@ class Erkle:
 			self.send("QUIT")
 		else:
 			self.send("QUIT "+reason)
+		self.connection.shutdown(socket.SHUT_RDWR)
+		self.connection.close()
 
 	# privmsg()
 	# Arguments: string, string
@@ -294,7 +296,10 @@ class Erkle:
 				# Add incoming data to the internal buffer
 				self._buffer = self._buffer + line2
 			except socket.error:
-				pass
+				# Shutdown the connection
+				self.connection.shutdown(socket.SHUT_RDWR)
+				self.connection.close()
+				return
 
 			# Step through the buffer and look for newlines
 			while True:
