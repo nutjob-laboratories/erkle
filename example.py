@@ -26,22 +26,20 @@ import erkle.events.dump
 
 import sys
 
-@hook.event("error")
-def everr(connection,code,target,reason):
-	if target!=None:
-		print("ERROR: "+code+" "+target+" "+reason)
-	else:
-		print("ERROR: "+code+" "+reason)
+print("Example bot for Erkle "+ERKLE_VERSION)
+
+@hook.event("public")
+def fed(connection,nickname,host,channel,message):
+	connection.me(channel,message)
 
 @hook.event("private")
 def fed(connection,nickname,host,message):
-	if message.lower()=="beep":
-		connection.msg("#blorple","fnagnits man")
+	connection.me(nickname,message)
 
 @hook.event("private")
 def fed(connection,nickname,host,message):
 	if message.lower()=="list":
-		connection.channels()
+		connection.list()
 
 @hook.event("public")
 def fed(connection,nickname,host,channel,message):
@@ -55,5 +53,14 @@ def fed(connection,nickname,host,message):
 		connection.quit()
 		sys.exit()
 
-c = ErkleClient("mybot","mybotu","my bot","localhost",6667,None,False)
+@hook.event("welcome")
+def evw(connection):
+	print("Registered!")
+	print()
+	print("Nickname: "+connection.nickname)
+	print()
+	#connection.send("JOIN #quirc")
+	connection.join("#quirc")
+
+c = Erkle("wr4ithn1x","erkle","erkle beep whut","localhost",6667,None,False)
 c.connect()
