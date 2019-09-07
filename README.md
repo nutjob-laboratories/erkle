@@ -19,7 +19,7 @@ def cjoin(connection,nickname,host,channel):
 	else:
 		connection.msg(f"Hello, {nickname}! Welcome to {channel}!")
 
-client = ErkleClient("erklebot","bot","Erkle Example Bot","irc.efnet.org")
+client = Erkle("erklebot","bot","Erkle Example Bot","irc.efnet.org")
 client.connect()
 ```
 
