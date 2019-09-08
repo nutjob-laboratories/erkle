@@ -15,7 +15,7 @@ def welcome(connection):
 @irc.event("join")
 def cjoin(connection,nickname,host,channel):
 	if nickname == connection.nickname:
-		connection.msg("Hello everyone!")
+		connection.msg("Hello everyone! I'm here!")
 	else:
 		connection.msg(f"Hello, {nickname}! Welcome to {channel}!")
 
