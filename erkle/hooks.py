@@ -25,8 +25,11 @@ class HookHandler:
 		self._handlers = {}
 		self._threads = []
 
-	def add(self,thread):
-		self._threads.append(thread)
+	def add(self,eobj,thread):
+		self._threads.append([eobj,thread])
+
+	def threads(self):
+		return self._threads
 
 	def call(self,type,*args):
 		if type in self._handlers:

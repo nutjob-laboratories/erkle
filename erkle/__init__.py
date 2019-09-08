@@ -25,4 +25,4 @@ __all__ = ['hook','Erkle','ERKLE_VERSION']
 from .hooks import hook
 from .irc import Erkle
 
-ERKLE_VERSION = "0.014"
+ERKLE_VERSION = "0.015"

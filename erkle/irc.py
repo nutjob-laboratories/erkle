@@ -21,7 +21,6 @@
 # SOFTWARE.
 
 import socket
-import sys
 from collections import defaultdict
 import string
 
@@ -39,6 +38,227 @@ from erkle.users import handle_users
 from erkle.errors import handle_errors
 
 class Erkle:
+
+	# __init__()
+	# Arguments: string, string, string, string, integer, string, boolean, string
+	#
+	# Initializes an Erkle() object.
+	def __init__(self,nickname,username,realname,server,port=6667,password=None,usessl=False,encoding="utf-8"):
+		self.nickname = nickname
+		self.username = username
+		self.realname = realname
+		self.server = server
+		self.port = port
+		self.password = password
+		self.usessl = usessl
+		self.encoding = encoding
+
+		self.connected = False
+		self.current_nickname = nickname
+
+		# If SSL isn't available, set self.usessl to false
+		if not SSL_AVAILABLE:
+			self.usessl = False
+
+		self._buffer = ""				# Where incoming server data is stored
+		self._channels = []				# Channel list buffer
+
+		self.hostname = ""				# The server's hostname
+		self.software = ""				# The server's software
+		self.options = []				# The server's options
+		self.network = ""				# The IRC server's network
+		self.commands = []				# Commands the server supports
+		self.maxchannels = 0			# Maximum number of channels
+		self.maxnicklen = 0				# Maximum nick length
+		self.chanlimit = []				# Server channel limit
+		self.nicklen = 0				# Server nick length
+		self.chanellen = 0				# Server channel name length
+		self.topiclen = 0				# Server channel topic length
+		self.kicklen = 0				# Server kick length
+		self.awaylen = 0				# Server away length
+		self.maxtargets = 0				# Server maximum msg targets
+		self.modes = 0					# Server maximum channel modes
+		self.chantypes = []				# What channel types the server uses
+		self.prefix = []				# Server status prefixes
+		self.chanmodes = []				# What channel modes the server uses
+		self.casemapping = ""			# Server case mapping
+		self.spoofed = ""				# The client's spoofed host
+		self.users = defaultdict(list)	# List of channel users
+		self.topic = {}					# Channel topics
+		self.whois = {}					# WHOIS data buffer
+
+	# connect()
+	# Arguments: none
+	#
+	# Calls _run().
+	def connect(self):
+		self._run()
+
+	# spawn()
+	# Arguments: none
+	#
+	# Calls _run() and runs it in a separate thread.
+	def spawn(self):
+		t = threading.Thread(name=f"{self.server}:{str(self.port)}",target=self._run)
+		hook.add(self,t)
+		t.start()
+
+	# _run()
+	# Arguments: none
+	#
+	# Connects to IRC and starts the loop that receives messages from the server
+	# and handles them.
+	def _run(self):
+
+		# Raise the "start" event
+		hook.call("start",self)
+
+		# Create the connection socket and connect to the server
+		self.connection = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+		self.connection.connect((self.server,self.port))
+
+		## SSL-ify the connection if needed
+		if self.usessl:
+			self.connection = ssl.wrap_socket(self.connection)
+
+		# Raise the "connect" event
+		hook.call("connect",self)
+
+		# Get the server to send nicks/hostmasks
+		self.send("PROTOCTL UHNAMES")
+
+		# Send server password, if necessary
+		if self.password:
+			self.send(f"PASS {self.password}")
+
+		# Send user information
+		self.send(f"NICK {self.nickname}")
+		self.send(f"USER {self.username} 0 0 :{self.realname}")
+
+		# Begin the connection loop
+		self._buffer = ""
+		while True:
+			try:
+				# Get incoming server data
+				line = self.connection.recv(4096)
+				# Decode incoming server data
+				try:
+					# Attempt to decode with the selected encoding
+					line2 = line.decode(self.encoding)
+				except UnicodeDecodeError:
+					try:
+						# Attempt to decode with "latin1"
+						line2 = line.decode('iso-8859-1')
+					except UnicodeDecodeError:
+						# Finally, if nothing else works, use windows default encoding
+						line2 = line.decode("CP1252", 'replace')
+				# Add incoming data to the internal buffer
+				self._buffer = self._buffer + line2
+			except socket.error:
+				# Shutdown the connection
+				self.connection.shutdown(socket.SHUT_RDWR)
+				self.connection.close()
+				return
+
+			# Step through the buffer and look for newlines
+			while True:
+				newline = self._buffer.find("\n")
+
+				# Newline not found, so we'll break and wait for more incoming data
+				if newline == -1:
+					break
+
+				# Grab the incoming line
+				line = self._buffer[:newline]
+
+				# Remove the incoming line from the buffer
+				self._buffer = self._buffer[newline+1:]
+
+				# Raise the "line" event
+				hook.call("line",self,line)
+
+				# Handle the line
+				self.handle(line)
+
+	# handle()
+	# Arguments: string
+	#
+	# Parses IRC messages from the server, and triggers events
+	def handle(self,line):
+
+		tokens = line.split()
+
+		# Return server ping
+		if tokens[0].lower()=="ping":
+			self.send("PONG " + tokens[1])
+			hook.call("ping",self)
+			return
+
+		# Nick collision
+		if tokens[1]=="433":
+			if self.current_nickname==self.nickname:
+				# Use alternate nick
+				self.nickname = self.nickname + "_"
+				self.current_nickname = self.nickname
+				self.send(f"NICK {self.nickname}")
+				hook.call("nick-taken",self,self.nickname)
+				return
+
+		# Server welcome
+		if tokens[1]=="001":
+			hook.call("welcome",self)
+			self.connected = True
+			return
+
+		# Chat message
+		if tokens[1].lower()=="privmsg":
+			userhost = tokens.pop(0)
+			userhost = userhost[1:]
+			tokens.pop(0)
+			target = tokens.pop(0)
+			message = ' '.join(tokens)
+			message = message[1:]
+			
+			p = userhost.split('!')
+			nickname = p[0]
+			host = p[1]
+
+			# CTCP action
+			if "\x01ACTION" in message:
+				message = message.replace("\x01ACTION",'')
+				message = message[:-1]
+				message = message.strip()
+				hook.call("action",self,nickname,host,target,message)
+				return
+
+			if target.lower()==self.nickname.lower():
+				# private message
+				hook.call("private",self,nickname,host,message)
+				return
+			else:
+				# public message
+				hook.call("public",self,nickname,host,target,message)
+				return
+
+		# Notice messages
+		if tokens[1].lower()=="notice":
+			tokens.pop(0)	# remove server
+			tokens.pop(0)	# remove message type
+
+			parsed = " ".join(tokens).split(":")
+			sender = parsed[0].strip()
+			message = parsed[1].strip()
+			hook.call("notice",self,sender,message)
+			return
+
+		# Error management
+		if handle_errors(self,line): return
+
+		# Server options
+		if handle_information(self,line): return
+
+		# User management
+		if handle_users(self,line): return
 
 	# send()
 	# Arguments: string
@@ -196,204 +416,3 @@ class Erkle:
 	# Sets (or unsets) a mode on a channel or person
 	def mode(self,target,mode):
 		self.send("MODE "+target+" "+mode)
-
-	def __init__(self,nickname,username,realname,server,port=6667,password=None,usessl=False,encoding="utf-8"):
-		self.nickname = nickname
-		self.username = username
-		self.realname = realname
-		self.server = server
-		self.port = port
-		self.password = password
-		self.usessl = usessl
-		self.encoding = encoding
-
-		self.connected = False
-		self.current_nickname = nickname
-
-		# If SSL isn't available, set self.usessl to false
-		if not SSL_AVAILABLE:
-			self.usessl = False
-
-		self._buffer = ""				# Where incoming server data is stored
-		self._channels = []				# Channel list buffer
-
-		self.hostname = ""				# The server's hostname
-		self.software = ""				# The server's software
-		self.options = []				# The server's options
-		self.network = ""				# The IRC server's network
-		self.commands = []				# Commands the server supports
-		self.maxchannels = 0			# Maximum number of channels
-		self.maxnicklen = 0				# Maximum nick length
-		self.chanlimit = []				# Server channel limit
-		self.nicklen = 0				# Server nick length
-		self.chanellen = 0				# Server channel name length
-		self.topiclen = 0				# Server channel topic length
-		self.kicklen = 0				# Server kick length
-		self.awaylen = 0				# Server away length
-		self.maxtargets = 0				# Server maximum msg targets
-		self.modes = 0					# Server maximum channel modes
-		self.chantypes = []				# What channel types the server uses
-		self.prefix = []				# Server status prefixes
-		self.chanmodes = []				# What channel modes the server uses
-		self.casemapping = ""			# Server case mapping
-		self.spoofed = ""				# The client's spoofed host
-		self.users = defaultdict(list)	# List of channel users
-		self.topic = {}					# Channel topics
-		self.whois = {}					# WHOIS data buffer
-
-	def connect(self):
-		self._run()
-
-	def spawn(self):
-		t = threading.Thread(name=f"{self.server}:{str(self.port)}",target=self._run)
-		hook.add(t)
-		t.start()
-
-	def _run(self):
-
-		# Raise the "start" event
-		hook.call("start",self)
-
-		# Create the connection socket and connect to the server
-		self.connection = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-		self.connection.connect((self.server,self.port))
-
-		## SSL-ify the connection if needed
-		if self.usessl:
-			self.connection = ssl.wrap_socket(self.connection)
-
-		# Raise the "connect" event
-		hook.call("connect",self)
-
-		# Get the server to send nicks/hostmasks
-		self.send("PROTOCTL UHNAMES")
-
-		# Send server password, if necessary
-		if self.password:
-			self.send(f"PASS {self.password}")
-
-		# Send user information
-		self.send(f"NICK {self.nickname}")
-		self.send(f"USER {self.username} 0 0 :{self.realname}")
-
-		# Begin the connection loop
-		self._buffer = ""
-		while True:
-			try:
-				# Get incoming server data
-				line = self.connection.recv(4096)
-				# Decode incoming server data
-				try:
-					# Attempt to decode with the selected encoding
-					line2 = line.decode(self.encoding)
-				except UnicodeDecodeError:
-					try:
-						# Attempt to decode with "latin1"
-						line2 = line.decode('iso-8859-1')
-					except UnicodeDecodeError:
-						# Finally, if nothing else works, use windows default encoding
-						line2 = line.decode("CP1252", 'replace')
-				# Add incoming data to the internal buffer
-				self._buffer = self._buffer + line2
-			except socket.error:
-				# Shutdown the connection
-				self.connection.shutdown(socket.SHUT_RDWR)
-				self.connection.close()
-				return
-
-			# Step through the buffer and look for newlines
-			while True:
-				newline = self._buffer.find("\n")
-
-				# Newline not found, so we'll break and wait for more incoming data
-				if newline == -1:
-					break
-
-				# Grab the incoming line
-				line = self._buffer[:newline]
-
-				# Remove the incoming line from the buffer
-				self._buffer = self._buffer[newline+1:]
-
-				# Raise the "line" event
-				hook.call("line",self,line)
-
-				# Handle the line
-				self.handle(line)
-
-	def handle(self,line):
-
-		tokens = line.split()
-
-		# Error management
-		if handle_errors(self,line): return
-
-		# Server options
-		if handle_information(self,line): return
-
-		# User management
-		if handle_users(self,line): return
-
-		# Return server ping
-		if tokens[0].lower()=="ping":
-			self.send("PONG " + tokens[1])
-			hook.call("ping",self)
-			return
-
-		# Nick collision
-		if tokens[1]=="433":
-			if self.current_nickname==self.nickname:
-				# Use alternate nick
-				self.nickname = self.nickname + "_"
-				self.current_nickname = self.nickname
-				self.send(f"NICK {self.nickname}")
-				hook.call("nick-taken",self,self.nickname)
-				return
-
-		# Server welcome
-		if tokens[1]=="001":
-			hook.call("welcome",self)
-			self.connected = True
-			return
-
-		# Chat message
-		if tokens[1].lower()=="privmsg":
-			userhost = tokens.pop(0)
-			userhost = userhost[1:]
-			tokens.pop(0)
-			target = tokens.pop(0)
-			message = ' '.join(tokens)
-			message = message[1:]
-			
-			p = userhost.split('!')
-			nickname = p[0]
-			host = p[1]
-
-			# CTCP action
-			if "\x01ACTION" in message:
-				message = message.replace("\x01ACTION",'')
-				message = message[:-1]
-				message = message.strip()
-				hook.call("action",self,nickname,host,target,message)
-				return
-
-			if target.lower()==self.nickname.lower():
-				# private message
-				hook.call("private",self,nickname,host,message)
-				return
-			else:
-				# public message
-				hook.call("public",self,nickname,host,target,message)
-				return
-
-		# Notice messages
-		if tokens[1].lower()=="notice":
-			tokens.pop(0)	# remove server
-			tokens.pop(0)	# remove message type
-
-			parsed = " ".join(tokens).split(":")
-			sender = parsed[0].strip()
-			message = parsed[1].strip()
-			hook.call("notice",self,sender,message)
-			return
-
