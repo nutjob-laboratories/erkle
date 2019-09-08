@@ -23,7 +23,7 @@
 import socket
 from collections import defaultdict
 import string
-
+import sys
 import threading
 
 SSL_AVAILABLE = True
@@ -62,6 +62,7 @@ class Erkle:
 
 		self._buffer = ""				# Where incoming server data is stored
 		self._channels = []				# Channel list buffer
+		self._thread = None				# If spawn()ed, stores the object's thread
 
 		self.hostname = ""				# The server's hostname
 		self.software = ""				# The server's software
@@ -100,7 +101,8 @@ class Erkle:
 	# Calls _run() and runs it in a separate thread.
 	def spawn(self):
 		t = threading.Thread(name=f"{self.server}:{str(self.port)}",target=self._run)
-		hook.add(self,t)
+		#hook.add(self,t)
+		self._thread = t
 		t.start()
 
 	# _run()
@@ -260,6 +262,13 @@ class Erkle:
 		# User management
 		if handle_users(self,line): return
 
+	# thread()
+	# Arguments: none
+	#
+	# Returns the objects thread, or None if the object isn't threaded
+	def thread(self):
+		return self._thread
+
 	# send()
 	# Arguments: string
 	#
@@ -298,6 +307,9 @@ class Erkle:
 			self.send("QUIT "+reason)
 		self.connection.shutdown(socket.SHUT_RDWR)
 		self.connection.close()
+
+		# Exit the thread, if we're running in a thread
+		if self._thread != None: sys.exit()
 
 	# privmsg()
 	# Arguments: string, string

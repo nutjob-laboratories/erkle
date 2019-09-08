@@ -51,7 +51,7 @@ def fed(connection,nickname,host,channel,message):
 def fed(connection,nickname,host,message):
 	if message.lower()=="quit":
 		connection.quit()
-		sys.exit()
+		#sys.exit()
 
 @hook.event("welcome")
 def evw(connection):
@@ -63,4 +63,5 @@ def evw(connection):
 	connection.join("#quirc")
 
 c = Erkle("wr4ithn1x","erkle","erkle beep whut","localhost",6667,None,False)
-c.connect()
+#c.connect()
+c.spawn()
