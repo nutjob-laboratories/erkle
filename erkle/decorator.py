@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-class HookHandler:
+class EventHandler:
 	def __init__(self):
 		self._handlers = {}
 
@@ -38,4 +38,4 @@ class HookHandler:
 			return handler
 		return registerhandler
 
-hook = HookHandler()
+irc = EventHandler()

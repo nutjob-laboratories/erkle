@@ -22,14 +22,14 @@
 
 from erkle import *
 
-@hook.event("error")
+@irc.event("error")
 def everr(connection,code,target,reason):
 	if target!=None:
 		print("ERROR: "+code+" "+target+" - "+reason)
 	else:
 		print("ERROR: "+code+" - "+reason)
 
-@hook.event("list")
+@irc.event("list")
 def evlist(connection,chanlist):
 	print("Begin channel list for "+connection.server+":"+str(connection.port))
 	for e in chanlist:
@@ -43,7 +43,7 @@ def evlist(connection,chanlist):
 			print(e[0]+" ("+numusers+")")
 	print("End channel list")
 
-@hook.event("whois")
+@irc.event("whois")
 def evwhois(connection,nickname,user,host,realname,server,idle,signon,channels,privs):
 	print(f"{nickname} {user}@{host} ({realname})")
 	print(f"{nickname} is connected to {server}")
@@ -53,36 +53,36 @@ def evwhois(connection,nickname,user,host,realname,server,idle,signon,channels,p
 	if privs:
 		print(privs)
 
-@hook.event('kick')
+@irc.event('kick')
 def evkick(connection,nickname,host,channel,target,message):
 	if message:
 		print(nickname+"("+host+") "+" kicked "+target+" from "+channel+": "+message)
 	else:
 		print(nickname+"("+host+") "+" kicked "+target+" from "+channel)
 
-@hook.event('kicked')
+@irc.event('kicked')
 def evkick(connection,nickname,host,channel,message):
 	if message:
 		print(nickname+"("+host+") "+" kicked you from "+channel+": "+message)
 	else:
 		print(nickname+"("+host+") "+" kicked you from "+channel)
 
-@hook.event('mode')
+@irc.event('mode')
 def evmode(connection,nickname,host,target,mode):
 	print(nickname+" set mode "+mode+" on "+target)
 
-@hook.event('topic')
+@irc.event('topic')
 def evtopic(connection,nickname,host,channel,topic):
 	if topic:
 		print(nickname+"("+host+") "+" set the topic in "+channel+" to "+topic)
 	else:
 		print(nickname+"("+host+") "+" set the topic in "+channel+" to nothing")
 
-@hook.event("back")
+@irc.event("back")
 def evb(connection):
 	print("You are back")
 
-@hook.event("away")
+@irc.event("away")
 def awy(connection,nickname,reason):
 	if nickname==connection.nickname:
 		print("You have been set as away")
@@ -92,64 +92,64 @@ def awy(connection,nickname,reason):
 		else:
 			print(nickname+" is away")
 
-@hook.event("notice")
+@irc.event("notice")
 def ntc(connection,sender,message):
 	print("notice: "+sender+": "+message)
 
-@hook.event("motd")
+@irc.event("motd")
 def mt(connection,motd):
 	print(motd)
 
-@hook.event("welcome")
+@irc.event("welcome")
 def con(connection):
 	print("Registered with "+connection.server+":"+str(connection.port))
 
-@hook.event("connect")
+@irc.event("connect")
 def bla(connection):
 	print("Connected to "+connection.server+":"+str(connection.port))
 
-@hook.event("nick-taken")
+@irc.event("nick-taken")
 def glarp(connection,newnick):
 	print("You nick was changed to "+newnick)
 
-@hook.event("action")
+@irc.event("action")
 def fed(connection,nickname,host,target,message):
 	print(target+" "+nickname+"("+host+") "+message)
 
-@hook.event("public")
+@irc.event("public")
 def fed(connection,nickname,host,channel,message):
 	print(channel+" "+nickname+"("+host+"): "+message)
 
-@hook.event("private")
+@irc.event("private")
 def fed(connection,nickname,host,message):
 	print(connection.nickname+" "+nickname+"("+host+"): "+message)
 
-@hook.event("ping")
+@irc.event("ping")
 def png(connection):
 	print("Ping? Pong!")
 
-@hook.event("nick")
+@irc.event("nick")
 def ni(connection,nickname,host,newnick):
 	print(nickname+"("+host+") "+" is now known as "+newnick)
 
-@hook.event("names")
+@irc.event("names")
 def evn(connection,channel,userlist):
 	print(channel+" "+",".join(userlist))
 
-@hook.event("quit")
+@irc.event("quit")
 def evq(connection,nickname,host,reason):
 	if reason:
 		print(nickname+"("+host+") "+" quit ("+reason+")")
 	else:
 		print(nickname+"("+host+") "+" quit")
 
-@hook.event("part")
+@irc.event("part")
 def evp(connection,nickname,host,channel,reason):
 	if reason:
 		print(nickname+"("+host+") left "+channel+" ("+reason+")")
 	else:
 		print(nickname+"("+host+") left "+channel)
 
-@hook.event("join")
+@irc.event("join")
 def evj(connection,nickname,host,channel):
 	print(nickname+"("+host+") joined "+channel)

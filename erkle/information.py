@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from erkle.hooks import hook
+from erkle.decorator import irc
 
 def handle_information(eobj,line):
 
@@ -29,7 +29,7 @@ def handle_information(eobj,line):
 
 	# listend
 	if tokens[1]=="323":
-		hook.call("list",eobj,eobj._channels)
+		irc.call("list",eobj,eobj._channels)
 		return True
 
 	# liststart
@@ -82,7 +82,7 @@ def handle_information(eobj,line):
 		mode = ' '.join(tokens)
 		mode = mode.replace(':','',1)
 
-		hook.call("mode",eobj,nickname,host,target,mode)
+		irc.call("mode",eobj,nickname,host,target,mode)
 
 		return True
 
@@ -95,7 +95,7 @@ def handle_information(eobj,line):
 		mode = ' '.join(tokens)
 		mode = mode.replace(':','',1)
 
-		hook.call("mode",eobj,eobj.hostname,eobj.hostname,target,mode)
+		irc.call("mode",eobj,eobj.hostname,eobj.hostname,target,mode)
 		return True
 
 	if tokens[1].lower()=="topic":
@@ -116,7 +116,7 @@ def handle_information(eobj,line):
 		if not len(topic)>0: topic = None
 
 		eobj.topic[channel] = topic
-		hook.call("topic",eobj,nickname,host,channel,topic)
+		irc.call("topic",eobj,nickname,host,channel,topic)
 
 		return True
 
@@ -129,7 +129,7 @@ def handle_information(eobj,line):
 		channel = tokens.pop(0)
 
 		eobj.topic[channel] = ''
-		hook.call("topic",eobj,eobj.hostname,eobj.hostname,channel,None)
+		irc.call("topic",eobj,eobj.hostname,eobj.hostname,channel,None)
 		return True
 
 	# 332 topic
@@ -145,10 +145,10 @@ def handle_information(eobj,line):
 
 		if len(topic)>0:
 			eobj.topic[channel] = topic
-			hook.call("topic",eobj,eobj.hostname,eobj.hostname,channel,topic)
+			irc.call("topic",eobj,eobj.hostname,eobj.hostname,channel,topic)
 		else:
 			eobj.topic[channel] = ''
-			hook.call("topic",eobj,eobj.hostname,eobj.hostname,channel,None)
+			irc.call("topic",eobj,eobj.hostname,eobj.hostname,channel,None)
 		return True
 
 	# 396
@@ -182,7 +182,7 @@ def handle_information(eobj,line):
 	if tokens[1]=="376":
 		motd = "\n".join(eobj.motd)
 		motd = motd.strip()
-		hook.call("motd",eobj,motd)
+		irc.call("motd",eobj,motd)
 		return True
 
 	# 005

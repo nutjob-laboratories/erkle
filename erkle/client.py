@@ -32,7 +32,7 @@ try:
 except ImportError:
 	SSL_AVAILABLE = False
 
-from erkle.hooks import hook
+from erkle.decorator import irc
 from erkle.information import handle_information
 from erkle.users import handle_users
 from erkle.errors import handle_errors
@@ -101,7 +101,7 @@ class Erkle:
 	# Calls _run() and runs it in a separate thread.
 	def spawn(self):
 		t = threading.Thread(name=f"{self.server}:{str(self.port)}",target=self._run)
-		#hook.add(self,t)
+		#irc.add(self,t)
 		self._thread = t
 		t.start()
 
@@ -113,7 +113,7 @@ class Erkle:
 	def _run(self):
 
 		# Raise the "start" event
-		hook.call("start",self)
+		irc.call("start",self)
 
 		# Create the connection socket and connect to the server
 		self.connection = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -124,7 +124,7 @@ class Erkle:
 			self.connection = ssl.wrap_socket(self.connection)
 
 		# Raise the "connect" event
-		hook.call("connect",self)
+		irc.call("connect",self)
 
 		# Get the server to send nicks/hostmasks
 		self.send("PROTOCTL UHNAMES")
@@ -177,7 +177,7 @@ class Erkle:
 				self._buffer = self._buffer[newline+1:]
 
 				# Raise the "line" event
-				hook.call("line",self,line)
+				irc.call("line",self,line)
 
 				# Handle the line
 				self.handle(line)
@@ -193,7 +193,7 @@ class Erkle:
 		# Return server ping
 		if tokens[0].lower()=="ping":
 			self.send("PONG " + tokens[1])
-			hook.call("ping",self)
+			irc.call("ping",self)
 			return
 
 		# Nick collision
@@ -203,12 +203,12 @@ class Erkle:
 				self.nickname = self.nickname + "_"
 				self.current_nickname = self.nickname
 				self.send(f"NICK {self.nickname}")
-				hook.call("nick-taken",self,self.nickname)
+				irc.call("nick-taken",self,self.nickname)
 				return
 
 		# Server welcome
 		if tokens[1]=="001":
-			hook.call("welcome",self)
+			irc.call("welcome",self)
 			self.connected = True
 			return
 
@@ -230,16 +230,16 @@ class Erkle:
 				message = message.replace("\x01ACTION",'')
 				message = message[:-1]
 				message = message.strip()
-				hook.call("action",self,nickname,host,target,message)
+				irc.call("action",self,nickname,host,target,message)
 				return
 
 			if target.lower()==self.nickname.lower():
 				# private message
-				hook.call("private",self,nickname,host,message)
+				irc.call("private",self,nickname,host,message)
 				return
 			else:
 				# public message
-				hook.call("public",self,nickname,host,target,message)
+				irc.call("public",self,nickname,host,target,message)
 				return
 
 		# Notice messages
@@ -250,7 +250,7 @@ class Erkle:
 			parsed = " ".join(tokens).split(":")
 			sender = parsed[0].strip()
 			message = parsed[1].strip()
-			hook.call("notice",self,sender,message)
+			irc.call("notice",self,sender,message)
 			return
 
 		# Error management

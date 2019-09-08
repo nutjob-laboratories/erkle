@@ -28,32 +28,24 @@ import sys
 
 print("Example bot for Erkle "+ERKLE_VERSION)
 
-@hook.event("public")
-def fed(connection,nickname,host,channel,message):
-	connection.me(channel,message)
-
-@hook.event("private")
-def fed(connection,nickname,host,message):
-	connection.me(nickname,message)
-
-@hook.event("private")
+@irc.event("private")
 def fed(connection,nickname,host,message):
 	if message.lower()=="list":
 		connection.list()
 
-@hook.event("public")
+@irc.event("public")
 def fed(connection,nickname,host,channel,message):
 	if message.lower()=="quit":
 		connection.quit()
 		sys.exit()
 
-@hook.event("private")
+@irc.event("private")
 def fed(connection,nickname,host,message):
 	if message.lower()=="quit":
 		connection.quit()
 		#sys.exit()
 
-@hook.event("welcome")
+@irc.event("welcome")
 def evw(connection):
 	print("Registered!")
 	print()

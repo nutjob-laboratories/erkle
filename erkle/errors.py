@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from erkle.hooks import hook
+from erkle.decorator import irc
 
 def raise_error_double_target_event(eobj,code,tokens):
 	tokens.pop(0)	# remove server
@@ -32,7 +32,7 @@ def raise_error_double_target_event(eobj,code,tokens):
 	reason = ' '.join(tokens)
 	reason = reason[1:]
 
-	hook.call("error",eobj,code,f"{target} {target2}",reason)
+	irc.call("error",eobj,code,f"{target} {target2}",reason)
 
 def raise_error_target_event(eobj,code,tokens):
 	tokens.pop(0)	# remove server
@@ -43,7 +43,7 @@ def raise_error_target_event(eobj,code,tokens):
 	reason = ' '.join(tokens)
 	reason = reason[1:]
 
-	hook.call("error",eobj,code,target,reason)
+	irc.call("error",eobj,code,target,reason)
 
 def raise_error_event(eobj,code,line):
 	parsed = line.split(':')
@@ -52,14 +52,14 @@ def raise_error_event(eobj,code,line):
 	else:
 		reason = "Unknown error"
 
-	hook.call("error",eobj,code,None,reason)
+	irc.call("error",eobj,code,None,reason)
 
 def handle_errors(eobj,line):
 
 	tokens = line.split()
 
 	if tokens[1]=="400":
-		hook.call("error",eobj,"400",None,"Uknown error")
+		irc.call("error",eobj,"400",None,"Uknown error")
 		return True
 
 	if tokens[1]=="401":

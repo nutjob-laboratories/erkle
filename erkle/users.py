@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from erkle.hooks import hook
+from erkle.decorator import irc
 
 class WhoisEntry:
 	def __init__(self,nickname):
@@ -49,7 +49,7 @@ def handle_users(eobj,line):
 		if nickname in eobj.whois:
 			whois = eobj.whois[nickname]
 
-			hook.call("whois",eobj,whois.nickname,whois.user,whois.host,whois.realname,whois.server,whois.idle,str(whois.signon),whois.channels,whois.privs)
+			irc.call("whois",eobj,whois.nickname,whois.user,whois.host,whois.realname,whois.server,whois.idle,str(whois.signon),whois.channels,whois.privs)
 			del eobj.whois[nickname]
 
 		return True
@@ -166,7 +166,7 @@ def handle_users(eobj,line):
 		channel = tokens.pop(0)
 		channel = channel[1:]
 
-		hook.call("invite",eobj,nickname,host,channel)
+		irc.call("invite",eobj,nickname,host,channel)
 		return True
 
 	# KICK
@@ -190,10 +190,10 @@ def handle_users(eobj,line):
 		if target==eobj.nickname:
 			# client was the one kicked
 			del eobj.users[channel]
-			hook.call("kicked",eobj,nickname,host,channel,msg)
+			irc.call("kicked",eobj,nickname,host,channel,msg)
 		else:
 			# other user kicked
-			hook.call("kick",eobj,nickname,host,channel,target,msg)
+			irc.call("kick",eobj,nickname,host,channel,target,msg)
 			
 			# Remove user from userlist
 			cleaned = []
@@ -212,18 +212,18 @@ def handle_users(eobj,line):
 			eobj.users[channel] = cleaned
 
 			# Resend the new channel user list
-			hook.call("names",eobj,channel,eobj.users[channel])
+			irc.call("names",eobj,channel,eobj.users[channel])
 
 		return True
 
 	# RPL_NOWAWAY
 	if tokens[1]=="306":
-		hook.call("away",eobj,self.nick,None)
+		irc.call("away",eobj,self.nick,None)
 		return True
 
 	# RPL_UNAWAY
 	if tokens[1]=="305":
-		hook.call("back",eobj)
+		irc.call("back",eobj)
 		return True
 
 	# RPL_AWAY
@@ -240,7 +240,7 @@ def handle_users(eobj,line):
 		else:
 			reason = None
 
-		hook.call("away",eobj,user,reason)
+		irc.call("away",eobj,user,reason)
 
 		return True
 
@@ -258,7 +258,7 @@ def handle_users(eobj,line):
 		newnick = tokens.pop(0)
 		newnick = newnick[1:]
 
-		hook.call("nick",eobj,nickname,host,newnick)
+		irc.call("nick",eobj,nickname,host,newnick)
 
 		# Remove user from channel user lists
 		for channel in eobj.users:
@@ -303,7 +303,7 @@ def handle_users(eobj,line):
 			if found:
 				eobj.users[channel] = cleaned
 				# Resend the new channel user list
-				hook.call("names",eobj,channel,eobj.users[channel])
+				irc.call("names",eobj,channel,eobj.users[channel])
 
 		return True
 
@@ -324,7 +324,7 @@ def handle_users(eobj,line):
 		else:
 			reason = None
 
-		hook.call("quit",eobj,nickname,host,reason)
+		irc.call("quit",eobj,nickname,host,reason)
 
 		# Remove user from channel user lists
 		for channel in eobj.users:
@@ -363,7 +363,7 @@ def handle_users(eobj,line):
 			if found:
 				eobj.users[channel] = cleaned
 				# Resend the new channel user list
-				hook.call("names",eobj,channel,eobj.users[channel])
+				irc.call("names",eobj,channel,eobj.users[channel])
 
 		return True
 
@@ -389,7 +389,7 @@ def handle_users(eobj,line):
 		else:
 			reason = ""
 
-		hook.call("part",eobj,nickname,host,channel,reason)
+		irc.call("part",eobj,nickname,host,channel,reason)
 
 		# Remove user from channel user list
 		cleaned = []
@@ -414,13 +414,13 @@ def handle_users(eobj,line):
 		eobj.users[channel] = cleaned
 
 		# Resend the new channel user list
-		hook.call("names",eobj,channel,eobj.users[channel])
+		irc.call("names",eobj,channel,eobj.users[channel])
 		return True
 
 	# User list end
 	if tokens[1]=="366":
 		channel = tokens[3]
-		hook.call("names",eobj,channel,eobj.users[channel])
+		irc.call("names",eobj,channel,eobj.users[channel])
 		return True
 
 	# Incoming user list
@@ -450,7 +450,7 @@ def handle_users(eobj,line):
 		nickname = p[0]
 		host = p[1]
 
-		hook.call("join",eobj,nickname,host,channel)
+		irc.call("join",eobj,nickname,host,channel)
 
 		if channel in eobj.users:
 			eobj.users[channel].append(user)
