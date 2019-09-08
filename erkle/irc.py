@@ -269,6 +269,13 @@ class Erkle:
 	def thread(self):
 		return self._thread
 
+	# kill()
+	# Arguments: none
+	#
+	# Terminates the thread, if the object is threaded
+	def kill(self):
+		if self._thread != None: sys.exit()
+
 	# send()
 	# Arguments: string
 	#
