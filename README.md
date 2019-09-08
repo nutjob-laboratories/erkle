@@ -8,11 +8,11 @@ An easy to use, event-driven, low-level IRC library for Python 3. It is being wr
 ```python
 from erkle import *
 
-@hook.event("welcome")
+@irc.event("welcome")
 def welcome(connection):
 	connection.join("#erklelib")
 
-@hook.event("join")
+@irc.event("join")
 def cjoin(connection,nickname,host,channel):
 	if nickname == connection.nickname:
 		connection.msg("Hello everyone!")
