@@ -29,6 +29,7 @@ def handle_information(eobj,line):
 
 	# listend
 	if tokens[1]=="323":
+		eobj.channels = eobj._channels
 		irc.call("list",eobj,eobj._channels)
 		return True
 

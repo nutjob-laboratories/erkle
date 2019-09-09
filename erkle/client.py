@@ -60,9 +60,10 @@ class Erkle:
 		if not SSL_AVAILABLE:
 			self.usessl = False
 
-		self._buffer = ""				# Where incoming server data is stored
+		self._buffer = ""				# Incoming data buffer
 		self._channels = []				# Channel list buffer
 		self._thread = None				# If spawn()ed, stores the object's thread
+		self._whois = {}				# WHOIS data buffer
 
 		self.hostname = ""				# The server's hostname
 		self.software = ""				# The server's software
@@ -86,7 +87,8 @@ class Erkle:
 		self.spoofed = ""				# The client's spoofed host
 		self.users = defaultdict(list)	# List of channel users
 		self.topic = {}					# Channel topics
-		self.whois = {}					# WHOIS data buffer
+		self.channels = []				# Server channel list
+		
 
 	# connect()
 	# Arguments: none

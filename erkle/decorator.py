@@ -24,17 +24,17 @@ class EventHandler:
 	def __init__(self):
 		self._handlers = {}
 
-	def call(self,type,*args):
-		if type in self._handlers:
-			for h in self._handlers[type]:
+	def call(self,event,*args):
+		if event in self._handlers:
+			for h in self._handlers[event]:
 				h(*args)
 
-	def event(self, type):
+	def event(self, event):
 		def registerhandler(handler):
-			if type in self._handlers:
-				self._handlers[type].append(handler)
+			if event in self._handlers:
+				self._handlers[event].append(handler)
 			else:
-				self._handlers[type] = [handler]
+				self._handlers[event] = [handler]
 			return handler
 		return registerhandler
 

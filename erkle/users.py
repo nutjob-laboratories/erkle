@@ -46,11 +46,11 @@ def handle_users(eobj,line):
 
 		nickname = tokens.pop(0)
 
-		if nickname in eobj.whois:
-			whois = eobj.whois[nickname]
+		if nickname in eobj._whois:
+			whois = eobj._whois[nickname]
 
 			irc.call("whois",eobj,whois.nickname,whois.user,whois.host,whois.realname,whois.server,whois.idle,str(whois.signon),whois.channels,whois.privs)
-			del eobj.whois[nickname]
+			del eobj._whois[nickname]
 
 		return True
 
@@ -69,10 +69,10 @@ def handle_users(eobj,line):
 		realname = ' '.join(tokens)
 		realname = realname [1:]
 
-		eobj.whois[nickname] = WhoisEntry(nickname)
-		eobj.whois[nickname].user = username
-		eobj.whois[nickname].host = host
-		eobj.whois[nickname].realname = realname
+		eobj._whois[nickname] = WhoisEntry(nickname)
+		eobj._whois[nickname].user = username
+		eobj._whois[nickname].host = host
+		eobj._whois[nickname].realname = realname
 
 		return True
 
@@ -88,8 +88,8 @@ def handle_users(eobj,line):
 		info = ' '.join(tokens)
 		info = info[1:]
 
-		if nickname in eobj.whois:
-			eobj.whois[nickname].server = f"{server} ({info})"
+		if nickname in eobj._whois:
+			eobj._whois[nickname].server = f"{server} ({info})"
 
 		return True
 
@@ -104,8 +104,8 @@ def handle_users(eobj,line):
 		privs = ' '.join(tokens)
 		privs = privs[1:]
 
-		if nickname in eobj.whois:
-			eobj.whois[nickname].privs = nickname + " " + privs
+		if nickname in eobj._whois:
+			eobj._whois[nickname].privs = nickname + " " + privs
 
 		return True
 
@@ -130,9 +130,9 @@ def handle_users(eobj,line):
 		except:
 			signon = 0
 
-		if nickname in eobj.whois:
-			eobj.whois[nickname].idle = idle
-			eobj.whois[nickname].signon = signon
+		if nickname in eobj._whois:
+			eobj._whois[nickname].idle = idle
+			eobj._whois[nickname].signon = signon
 
 		return True
 
@@ -147,8 +147,8 @@ def handle_users(eobj,line):
 		chans = chans[1:]
 		channel = chans.split(' ')
 
-		if nickname in eobj.whois:
-			eobj.whois[nickname].channels = channel
+		if nickname in eobj._whois:
+			eobj._whois[nickname].channels = channel
 		return True
 
 	# INVITE
