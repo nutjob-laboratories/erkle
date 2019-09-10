@@ -22,14 +22,14 @@
 
 from erkle import *
 
-@irc.event("error")
+@irc.event("error", "erkle.events.dump")
 def everr(connection,code,target,reason):
 	if target!=None:
 		print("ERROR: "+code+" "+target+" - "+reason)
 	else:
 		print("ERROR: "+code+" - "+reason)
 
-@irc.event("list")
+@irc.event("list", "erkle.events.dump")
 def evlist(connection,chanlist):
 	print("Begin channel list for "+connection.server+":"+str(connection.port))
 	for e in chanlist:
@@ -43,7 +43,7 @@ def evlist(connection,chanlist):
 			print(e[0]+" ("+numusers+")")
 	print("End channel list")
 
-@irc.event("whois")
+@irc.event("whois", "erkle.events.dump")
 def evwhois(connection,nickname,user,host,realname,server,idle,signon,channels,privs):
 	print(f"{nickname} {user}@{host} ({realname})")
 	print(f"{nickname} is connected to {server}")
@@ -53,36 +53,36 @@ def evwhois(connection,nickname,user,host,realname,server,idle,signon,channels,p
 	if privs:
 		print(privs)
 
-@irc.event('kick')
+@irc.event('kick', "erkle.events.dump")
 def evkick(connection,nickname,host,channel,target,message):
 	if message:
 		print(nickname+"("+host+") "+" kicked "+target+" from "+channel+": "+message)
 	else:
 		print(nickname+"("+host+") "+" kicked "+target+" from "+channel)
 
-@irc.event('kicked')
+@irc.event('kicked', "erkle.events.dump")
 def evkick(connection,nickname,host,channel,message):
 	if message:
 		print(nickname+"("+host+") "+" kicked you from "+channel+": "+message)
 	else:
 		print(nickname+"("+host+") "+" kicked you from "+channel)
 
-@irc.event('mode')
+@irc.event('mode', "erkle.events.dump")
 def evmode(connection,nickname,host,target,mode):
 	print(nickname+" set mode "+mode+" on "+target)
 
-@irc.event('topic')
+@irc.event('topic', "erkle.events.dump")
 def evtopic(connection,nickname,host,channel,topic):
 	if topic:
 		print(nickname+"("+host+") "+" set the topic in "+channel+" to "+topic)
 	else:
 		print(nickname+"("+host+") "+" set the topic in "+channel+" to nothing")
 
-@irc.event("back")
+@irc.event("back", "erkle.events.dump")
 def evb(connection):
 	print("You are back")
 
-@irc.event("away")
+@irc.event("away", "erkle.events.dump")
 def awy(connection,nickname,reason):
 	if nickname==connection.nickname:
 		print("You have been set as away")
@@ -92,64 +92,64 @@ def awy(connection,nickname,reason):
 		else:
 			print(nickname+" is away")
 
-@irc.event("notice")
+@irc.event("notice", "erkle.events.dump")
 def ntc(connection,sender,message):
 	print("notice: "+sender+": "+message)
 
-@irc.event("motd")
+@irc.event("motd", "erkle.events.dump")
 def mt(connection,motd):
 	print(motd)
 
-@irc.event("welcome")
+@irc.event("welcome", "erkle.events.dump")
 def con(connection):
 	print("Registered with "+connection.server+":"+str(connection.port))
 
-@irc.event("connect")
+@irc.event("connect", "erkle.events.dump")
 def bla(connection):
 	print("Connected to "+connection.server+":"+str(connection.port))
 
-@irc.event("nick-taken")
+@irc.event("nick-taken", "erkle.events.dump")
 def glarp(connection,newnick):
 	print("You nick was changed to "+newnick)
 
-@irc.event("action")
+@irc.event("action", "erkle.events.dump")
 def fed(connection,nickname,host,target,message):
 	print(target+" "+nickname+"("+host+") "+message)
 
-@irc.event("public")
+@irc.event("public", "erkle.events.dump")
 def fed(connection,nickname,host,channel,message):
 	print(channel+" "+nickname+"("+host+"): "+message)
 
-@irc.event("private")
+@irc.event("private", "erkle.events.dump")
 def fed(connection,nickname,host,message):
 	print(connection.nickname+" "+nickname+"("+host+"): "+message)
 
-@irc.event("ping")
+@irc.event("ping", "erkle.events.dump")
 def png(connection):
 	print("Ping? Pong!")
 
-@irc.event("nick")
+@irc.event("nick", "erkle.events.dump")
 def ni(connection,nickname,host,newnick):
 	print(nickname+"("+host+") "+" is now known as "+newnick)
 
-@irc.event("names")
+@irc.event("names", "erkle.events.dump")
 def evn(connection,channel,userlist):
 	print(channel+" "+",".join(userlist))
 
-@irc.event("quit")
+@irc.event("quit", "erkle.events.dump")
 def evq(connection,nickname,host,reason):
 	if reason:
 		print(nickname+"("+host+") "+" quit ("+reason+")")
 	else:
 		print(nickname+"("+host+") "+" quit")
 
-@irc.event("part")
+@irc.event("part", "erkle.events.dump")
 def evp(connection,nickname,host,channel,reason):
 	if reason:
 		print(nickname+"("+host+") left "+channel+" ("+reason+")")
 	else:
 		print(nickname+"("+host+") left "+channel)
 
-@irc.event("join")
+@irc.event("join", "erkle.events.dump")
 def evj(connection,nickname,host,channel):
 	print(nickname+"("+host+") joined "+channel)

@@ -53,7 +53,7 @@ class Erkle:
 		self.usessl = usessl
 		self.encoding = encoding
 
-		self.connected = False
+		self.started = False
 		self.current_nickname = nickname
 
 		# If SSL isn't available, set self.usessl to false
@@ -88,8 +88,27 @@ class Erkle:
 		self.users = defaultdict(list)	# List of channel users
 		self.topic = {}					# Channel topics
 		self.channels = []				# Server channel list
-		
 
+	# enable()
+	# Arguments: string[, string,...]
+	#
+	# Enables a disabled event tag
+	def enable(self,*args):
+		for tag in args:
+			try:
+				irc._disabled.remove(tag)
+			except:
+				pass
+
+	# disabled()
+	# Arguments: string[, string,...]
+	#
+	# Disables events with the given tag(s)
+	def disable(self,*args):
+		for tag in args:
+			irc._disabled.append(tag)
+			irc._disabled = list(dict.fromkeys(irc._disabled))
+		
 	# connect()
 	# Arguments: none
 	#
@@ -113,6 +132,9 @@ class Erkle:
 	# Connects to IRC and starts the loop that receives messages from the server
 	# and handles them.
 	def _run(self):
+
+		# Set object state as "started"
+		self.started = True
 
 		# Raise the "start" event
 		irc.call("start",self)
@@ -211,7 +233,6 @@ class Erkle:
 		# Server welcome
 		if tokens[1]=="001":
 			irc.call("welcome",self)
-			self.connected = True
 			return
 
 		# Chat message

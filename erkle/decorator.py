@@ -20,22 +20,43 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+class Event:
+	def __init__(self,func,tags):
+		self.function = func
+		self.tags = tags
+
 class EventHandler:
 	def __init__(self):
 		self._handlers = {}
+		self._disabled = []
 
 	def call(self,event,*args):
 		if event in self._handlers:
 			for h in self._handlers[event]:
-				h(*args)
+				# h(*args)
+				nogo = False
+				for t in h.tags:
+					if t in self._disabled: nogo=True
+				if not nogo:
+					h.function(*args)
 
-	def event(self, event):
+	def event(self, event, *args):
 		def registerhandler(handler):
+			tags = []
+			for t in args:
+				tags.append(t)
+
 			if event in self._handlers:
-				self._handlers[event].append(handler)
+				#self._handlers[event].append(handler)
+				ef = Event(handler,tags)
+				self._handlers[event].append(ef)
 			else:
-				self._handlers[event] = [handler]
+				# self._handlers[event] = [handler]
+				ef = Event(handler,tags)
+				self._handlers[event] = [ef]
 			return handler
 		return registerhandler
 
 irc = EventHandler()
+
+

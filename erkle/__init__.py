@@ -25,4 +25,4 @@ __all__ = ['irc','Erkle','ERKLE_VERSION']
 from .decorator import irc
 from .client import Erkle
 
-ERKLE_VERSION = "0.017"
+ERKLE_VERSION = "0.020"
