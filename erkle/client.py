@@ -43,18 +43,67 @@ class Erkle:
 	# Arguments: string, string, string, string, integer, string, boolean, string
 	#
 	# Initializes an Erkle() object.
-	def __init__(self,nickname,username,realname,server,port=6667,password=None,usessl=False,encoding="utf-8"):
-		self.nickname = nickname
-		self.username = username
-		self.realname = realname
-		self.server = server
-		self.port = port
-		self.password = password
-		self.usessl = usessl
-		self.encoding = encoding
+	# def __init__(self,nickname,username,realname,server,port=6667,password=None,usessl=False,encoding="utf-8"):
+	def __init__(self,serverinfo):
+
+		self.nickname = None
+		if 'nickname' in serverinfo:
+			self.nickname = serverinfo['nickname']
+		if 'nick' in serverinfo:
+			self.nickname = serverinfo['nick']
+		if self.nickname == None:
+			raise RuntimeError("Key 'nickname' missing from user configuration dict")
+
+		self.username = None
+		if 'username' in serverinfo:
+			self.username = serverinfo['username']
+		if 'user' in serverinfo:
+			self.username = serverinfo['user']
+		if self.username == None:
+			raise RuntimeError("Key 'username' missing from user configuration dict")
+
+		self.realname = None
+		if 'realname' in serverinfo:
+			self.realname = serverinfo['realname']
+		if 'real' in serverinfo:
+			self.realname = serverinfo['real']
+		if self.realname == None:
+			raise RuntimeError("Key 'realname' missing from user configuration dict")
+
+		self.alternate = self.nickname + "_"
+		if 'alternate' in serverinfo:
+			self.alternate = serverinfo['alternate']
+		if 'alt' in serverinfo:
+			self.alternate = serverinfo['alt']
+
+
+		if 'server' in serverinfo:
+			self.server = serverinfo['server']
+		else:
+			raise RuntimeError("Key 'server' missing from server configuration dict")
+
+		if 'port' in serverinfo:
+			self.port = serverinfo['port']
+		else:
+			self.port = 6667
+
+		if 'password' in serverinfo:
+			self.password = serverinfo['password']
+		else:
+			self.password = None
+
+		if 'ssl' in serverinfo:
+			self.usessl = serverinfo['ssl']
+		else:
+			self.usessl = False
+
+		if 'encoding' in serverinfo:
+			self.encoding = serverinfo['encoding']
+		else:
+			self.encoding = "utf-8"
 
 		self.started = False
-		self.current_nickname = nickname
+		self.current_nickname = self.nickname
 
 		# If SSL isn't available, set self.usessl to false
 		if not SSL_AVAILABLE:
@@ -224,9 +273,14 @@ class Erkle:
 		if tokens[1]=="433":
 			if self.current_nickname==self.nickname:
 				# Use alternate nick
-				self.nickname = self.nickname + "_"
-				self.current_nickname = self.nickname
-				self.send(f"NICK {self.nickname}")
+				if self.nickname == self.alternate:
+					self.nickname = self.nickname + "_"
+					self.current_nickname = self.nickname
+					self.send(f"NICK {self.nickname}")
+				else:
+					self.nickname = self.alternate
+					self.current_nickname = self.alternate
+					self.send(f"NICK {self.alternate}")
 				irc.call("nick-taken",self,self.nickname)
 				return
 

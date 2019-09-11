@@ -43,17 +43,33 @@ def fed(connection,nickname,host,channel,message):
 def fed(connection,nickname,host,message):
 	if message.lower().strip()=="quit":
 		connection.quit()
-		#sys.exit()
+		sys.exit()
+
+@irc.event("private","quiet")
+def fed(connection,nickname,host,message):
+	if message.lower().strip()=="quiet":
+		c.disable("erkle.events.dump")
+
+@irc.event("private","quiet")
+def fed(connection,nickname,host,message):
+	if message.lower().strip()=="loud":
+		c.enable("erkle.events.dump")
 
 @irc.event("welcome")
 def evw(connection):
 	print("Registered!")
-	print()
-	print("Nickname: "+connection.nickname)
-	print()
-	#connection.send("JOIN #quirc")
 	connection.join("#quirc")
 
-c = Erkle("wr4ithn1x","erkle","erkle beep whut","localhost",6667,None,False)
-#c.connect()
-c.spawn()
+uinfo = {
+	'nickname': 'erklebot',
+	'username': 'erkle',
+	'realname': 'Erkle Example Bot',
+	'alternate': 'erk1eb0t',
+	'server':'localhost',
+	'port':6667,
+	'ssl': False,
+	'password': None,
+	'encoding': 'utf-8'
+}
+c = Erkle(uinfo)
+c.connect()

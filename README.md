@@ -4,7 +4,7 @@
 
 An easy to use, event-driven, low-level IRC library for Python 3. It is being written as a replacement for Twisted in the [Erk IRC Client](https://github.com/nutjob-laboratories/erk).
 
-The current version of **Erkle** is 0.017.
+The current version of **Erkle** is 0.027.
 
 **Erkle** is not feature complete, but it is complete enough for most simple IRC bots.
 
@@ -23,7 +23,15 @@ def cjoin(connection,nickname,host,channel):
 	else:
 		connection.msg(f"Hello, {nickname}! Welcome to {channel}!")
 
-client = Erkle("erklebot","bot","Erkle Example Bot","irc.efnet.org")
+configuration = {
+	'nickname': 'erklebot',
+	'username': 'erkle',
+	'realname': 'Erkle Example Bot',
+	'alternate': 'erk1eb0t',
+	'server':'irc.efnet.org'
+}
+
+client = Erkle(configuration)
 client.connect()
 ```
 
