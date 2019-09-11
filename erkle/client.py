@@ -138,6 +138,28 @@ class Erkle:
 		self.topic = {}					# Channel topics
 		self.channels = []				# Server channel list
 
+		self.tags = []					# Object tags
+
+	# tag()
+	# Arguments: string[, string,...]
+	#
+	# Adds a tag to the Erkle object
+	def tag(self,*args):
+		for t in args:
+			self.tags.append(t)
+			irc._disabled = list(dict.fromkeys(irc._disabled))
+
+	# untag()
+	# Arguments: string[, string,...]
+	#
+	# Removes a tag from the Erkle object
+	def untag(self,*args):
+		for t in args:
+			try:
+				self.tags.remove(t)
+			except:
+				pass
+
 	# enable()
 	# Arguments: string[, string,...]
 	#

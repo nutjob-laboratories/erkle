@@ -30,15 +30,25 @@ class EventHandler:
 		self._handlers = {}
 		self._disabled = []
 
-	def call(self,event,*args):
+	def call(self,event,eobj,*args):
 		if event in self._handlers:
 			for h in self._handlers[event]:
 				# h(*args)
+
+				# Check to see if the Erkle object has any tags
+				DOIT = True
+				if len(eobj.tags)>0:
+					# See if the hooked function has the Erkle object's tag
+					DOIT = False
+					for t in eobj.tags:
+						# The hooked function has the Erkle object's tag
+						if t in h.tags: DOIT = True
+
 				nogo = False
 				for t in h.tags:
 					if t in self._disabled: nogo=True
 				if not nogo:
-					h.function(*args)
+					if DOIT: h.function(eobj,*args)
 
 	def event(self, event, *args):
 		def registerhandler(handler):

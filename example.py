@@ -33,12 +33,6 @@ def fed(connection,nickname,host,message):
 	if message.lower().strip()=="list":
 		connection.list()
 
-@irc.event("public")
-def fed(connection,nickname,host,channel,message):
-	if message.lower().strip()=="quit":
-		connection.quit()
-		sys.exit()
-
 @irc.event("private")
 def fed(connection,nickname,host,message):
 	if message.lower().strip()=="quit":
