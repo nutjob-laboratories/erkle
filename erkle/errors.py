@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 from erkle.decorator import irc
+from erkle.common import *
 
 def raise_error_double_target_event(eobj,code,tokens):
 	tokens.pop(0)	# remove server

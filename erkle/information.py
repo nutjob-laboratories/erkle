@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 from erkle.decorator import irc
+from erkle.common import *
 
 def handle_information(eobj,line):
 

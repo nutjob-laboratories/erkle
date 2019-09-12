@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 from erkle.decorator import irc
+from erkle.common import *
 
 class WhoisEntry:
 	def __init__(self,nickname):

@@ -36,18 +36,25 @@ from erkle.decorator import irc
 from erkle.information import handle_information
 from erkle.users import handle_users
 from erkle.errors import handle_errors
+from erkle.common import *
 
-APPLICATION_NAME = "Erkle"
-ERKLE_VERSION = "0.028"
-DEFAULT_REALNAME = APPLICATION_NAME + " " + ERKLE_VERSION + " IRC Client"
+class Uptimer(threading.Thread):
+	def __init__(self, event, eobj):
+		threading.Thread.__init__(self)
+		self.stopped = event
+		self.erkle = eobj
+
+	# Increment the Erkle object's uptime by 1 ever second
+	def run(self):
+		while not self.stopped.wait(1):
+			self.erkle.uptime = self.erkle.uptime + 1
 
 class Erkle:
 
 	# __init__()
-	# Arguments: string, string, string, string, integer, string, boolean, string
+	# Arguments: dict
 	#
 	# Initializes an Erkle() object.
-	# def __init__(self,nickname,username,realname,server,port=6667,password=None,usessl=False,encoding="utf-8"):
 	def __init__(self,serverinfo):
 
 		self.nickname = None
@@ -140,6 +147,7 @@ class Erkle:
 		self.channels = []				# Server channel list
 
 		self.tags = []					# Object tags
+		self.uptime = 0					# Object uptime, in seconds
 
 	# tag()
 	# Arguments: string[, string,...]
@@ -205,6 +213,10 @@ class Erkle:
 	# and handles them.
 	def _run(self):
 
+		self.stoptimer = threading.Event()
+		self.uptimer = Uptimer(self.stoptimer,self)
+		self.uptimer.start()
+
 		# Set object state as "started"
 		self.started = True
 
@@ -239,6 +251,7 @@ class Erkle:
 			try:
 				# Get incoming server data
 				line = self.connection.recv(4096)
+
 				# Decode incoming server data
 				try:
 					# Attempt to decode with the selected encoding
@@ -253,6 +266,11 @@ class Erkle:
 				# Add incoming data to the internal buffer
 				self._buffer = self._buffer + line2
 			except socket.error:
+				print("Error: disconnected from the server")
+
+				# Stop the timer
+				self.stoptimer.set()
+
 				# Shutdown the connection
 				self.connection.shutdown(socket.SHUT_RDWR)
 				self.connection.close()
@@ -374,6 +392,9 @@ class Erkle:
 	#
 	# Terminates the thread, if the object is threaded
 	def kill(self):
+		# Stop the timer
+		self.stoptimer.set()
+
 		if self._thread != None: sys.exit()
 
 	# send()
@@ -381,7 +402,18 @@ class Erkle:
 	#
 	# Sends a message to the IRC server
 	def send(self,data):
-		self.connection.send(bytes(data + "\r\n", "utf-8"))
+		#self.connection.send(bytes(data + "\r\n", "utf-8"))
+
+		sender = getattr(self.connection, 'write', self.connection.send)
+		try:
+			sender(bytes(data + "\r\n", "utf-8"))
+		except socket.error:
+			print("Error sending message: disconnected from the server")
+
+			# Shutdown the connection and exit
+			self.connection.shutdown(socket.SHUT_RDWR)
+			self.connection.close()
+			sys.exit(1)
 
 	# join()
 	# Arguments: string, string
@@ -414,6 +446,9 @@ class Erkle:
 			self.send("QUIT "+reason)
 		self.connection.shutdown(socket.SHUT_RDWR)
 		self.connection.close()
+
+		# Stop the timer
+		self.stoptimer.set()
 
 		# Exit the thread, if we're running in a thread
 		if self._thread != None: sys.exit()

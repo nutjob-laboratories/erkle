@@ -30,6 +30,10 @@ print("Example bot for Erkle "+ERKLE_VERSION)
 
 @irc.event("private")
 def fed(connection,nickname,host,message):
+	print(connection.uptime)
+
+@irc.event("private")
+def fed(connection,nickname,host,message):
 	if message.lower().strip()=="list":
 		connection.list()
 

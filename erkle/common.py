@@ -20,8 +20,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = ['irc','Erkle','ERKLE_VERSION']
-
-from .decorator import irc
-from .client import Erkle
-from .common import *
+APPLICATION_NAME = "Erkle"
+ERKLE_VERSION = "0.028"
+DEFAULT_REALNAME = APPLICATION_NAME + " " + ERKLE_VERSION + " IRC Client"
