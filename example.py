@@ -56,8 +56,6 @@ def evw(connection):
 
 uinfo = {
 	'nickname': 'erklebot',
-	'username': 'erkle',
-	'realname': 'Erkle Example Bot',
 	'alternate': 'erk1eb0t',
 	'server':'localhost',
 	'port':6667,

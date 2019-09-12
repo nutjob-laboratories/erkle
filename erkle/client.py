@@ -37,6 +37,10 @@ from erkle.information import handle_information
 from erkle.users import handle_users
 from erkle.errors import handle_errors
 
+APPLICATION_NAME = "Erkle"
+ERKLE_VERSION = "0.028"
+DEFAULT_REALNAME = APPLICATION_NAME + " " + ERKLE_VERSION + " IRC Client"
+
 class Erkle:
 
 	# __init__()
@@ -54,28 +58,23 @@ class Erkle:
 		if self.nickname == None:
 			raise RuntimeError("Key 'nickname' missing from user configuration dict")
 
-		self.username = None
+		self.username = self.nickname
 		if 'username' in serverinfo:
 			self.username = serverinfo['username']
 		if 'user' in serverinfo:
 			self.username = serverinfo['user']
-		if self.username == None:
-			raise RuntimeError("Key 'username' missing from user configuration dict")
 
-		self.realname = None
+		self.realname = DEFAULT_REALNAME
 		if 'realname' in serverinfo:
 			self.realname = serverinfo['realname']
 		if 'real' in serverinfo:
 			self.realname = serverinfo['real']
-		if self.realname == None:
-			raise RuntimeError("Key 'realname' missing from user configuration dict")
 
 		self.alternate = self.nickname + "_"
 		if 'alternate' in serverinfo:
 			self.alternate = serverinfo['alternate']
 		if 'alt' in serverinfo:
 			self.alternate = serverinfo['alt']
-
 
 		if 'server' in serverinfo:
 			self.server = serverinfo['server']
@@ -105,9 +104,11 @@ class Erkle:
 		self.started = False
 		self.current_nickname = self.nickname
 
-		# If SSL isn't available, set self.usessl to false
+		# If SSL isn't available, and SSL is set to
+		# be used, raise an error
 		if not SSL_AVAILABLE:
-			self.usessl = False
+			if self.usessl:
+				raise RuntimeError("SSL/TLS is not available. Please install pyOpenSSL.")
 
 		self._buffer = ""				# Incoming data buffer
 		self._channels = []				# Channel list buffer
