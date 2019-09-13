@@ -110,16 +110,13 @@ class Erkle:
 		else:
 			self.encoding = "utf-8"
 
-		if 'flood' in serverinfo:
-			if serverinfo['flood']:
-				self.flood_protection = False
-			else:
-				self.flood_protection = True
+		if 'flood-protection' in serverinfo:
+			self.flood_protection = serverinfo['flood-protection']
 		else:
 			self.flood_protection = True
 
-		if 'floodrate' in serverinfo:
-			self.floodrate = serverinfo['floodrate']
+		if 'flood-rate' in serverinfo:
+			self.floodrate = serverinfo['flood-rate']
 		else:
 			self.floodrate = 2
 

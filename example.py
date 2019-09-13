@@ -64,8 +64,8 @@ uinfo = {
 	'ssl': False,
 	'password': None,
 	'encoding': 'utf-8',
-	'flood': False,
-	'floodrate': 2,
+	'flood-protection': True,
+	'flood-rate': 2,
 	'language': 'en'
 }
 c = Erkle(uinfo)
