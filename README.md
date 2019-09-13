@@ -8,11 +8,20 @@ The current version of **Erkle** is 0.028.
 
 **Erkle** is not feature complete, but it is complete enough for most simple IRC bots.
 
+# Features
+
+* Uses only modules from Python's standard library
+* Small and easy to bundle with applications
+* Fast
+* Multiple connection/client support
+* Flood protection
+* Built-in localzation (supported languages: Englist, French, and German)
+
 # Example
 ```python
 from erkle import *
 
-@irc.event("welcome")
+@irc.event("registered")
 def welcome(connection):
 	connection.join("#erklelib")
 
@@ -41,4 +50,4 @@ Honestly? Because I got sick of working around Twisted's foibles, and didn't rea
 There's no subclassing, inheritance, or anything else needed to use **Erkle**. Just write some functions, hook them to IRC events, and you're done.
 
 # Documentation
-**Erkle**'s documentation is available [here](https://github.com/nutjob-laboratories/erkle/blob/master/documentation/erkle.pdf).
+**Erkle**'s documentation is available [here](https://github.com/nutjob-laboratories/erkle/blob/master/documentation/Erkle-IRC-Library.pdf).

@@ -20,53 +20,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from erkle import *
+import threading
 
-import erkle.events.dump
+class Uptimer(threading.Thread):
+	def __init__(self, event, eobj):
+		threading.Thread.__init__(self)
+		self.stopped = event
+		self.erkle = eobj
 
-import sys
-
-print("Example bot for Erkle "+ERKLE_VERSION)
-
-@irc.event("private")
-def fed(connection,nickname,host,message):
-	if message.lower().strip()=="list":
-		connection.list()
-
-@irc.event("private")
-def fed(connection,nickname,host,message):
-	if message.lower().strip()=="quit":
-		connection.quit()
-		sys.exit()
-
-@irc.event("private","quiet")
-def fed(connection,nickname,host,message):
-	if message.lower().strip()=="quiet":
-		c.disable("erkle.events.dump")
-
-@irc.event("private","quiet")
-def fed(connection,nickname,host,message):
-	if message.lower().strip()=="loud":
-		c.enable("erkle.events.dump")
-
-@irc.event("registered")
-def evw(connection):
-	print("Registered!")
-	connection.join("#quirc")
-
-uinfo = {
-	'nickname': 'erklebot',
-	'username': 'erklebot',
-	'realname' : 'Erkle IRC bot',
-	'alternate': 'erk1eb0t',
-	'server':'localhost',
-	'port':6667,
-	'ssl': False,
-	'password': None,
-	'encoding': 'utf-8',
-	'flood': False,
-	'floodrate': 2,
-	'language': 'en'
-}
-c = Erkle(uinfo)
-c.connect()
+	# Execute the Erkle object's _uptime_clock_tick() method
+	def run(self):
+		while not self.stopped.wait(1):
+			self.erkle._uptime_clock_tick()
