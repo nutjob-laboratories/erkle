@@ -6,3 +6,4 @@ DISCONNECTED_ERROR = "Déconnecté du serveur"
 SEND_MESSAGE_ERROR = "Impossible d'envoyer un message: déconnecté du serveur"
 
 ERROR_WORD = "Erreur"
+UNKNOWN_ERROR = "Erreur inconnue"

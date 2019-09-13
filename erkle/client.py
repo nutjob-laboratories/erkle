@@ -40,7 +40,6 @@ from erkle.users import handle_users
 from erkle.errors import handle_errors
 from erkle.clock import Uptimer
 from erkle.common import *
-# from erkle.strings import *
 
 class Erkle:
 
@@ -54,7 +53,11 @@ class Erkle:
 		if 'language' in serverinfo:
 			self.language = serverinfo['language']
 
+		# Load in localized strings
 		self._load_localization_strings(self.language)
+		# Set "unknown error" string in erkle.errors to the
+		# appropriate localized equivalent
+		self.UNKNOWN_ERROR = UNKNOWN_ERROR
 
 		self.nickname = None
 		if 'nickname' in serverinfo:
@@ -170,6 +173,7 @@ class Erkle:
 	# and handles them.
 	def _run(self):
 
+		# Start the uptime clock
 		self.stoptimer = threading.Event()
 		self.uptimer = Uptimer(self.stoptimer,self)
 		self.uptimer.start()

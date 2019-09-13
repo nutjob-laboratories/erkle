@@ -6,3 +6,4 @@ DISCONNECTED_ERROR = "Verbindung zum Server getrennt"
 SEND_MESSAGE_ERROR = "Nachricht kann nicht gesendet werden: Verbindung zum Server getrennt"
 
 ERROR_WORD = "Error"
+UNKNOWN_ERROR = "Unbekannter Fehler"
