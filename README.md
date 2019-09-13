@@ -15,7 +15,7 @@ The current version of **Erkle** is 0.028.
 * Fast
 * Multiple connection/client support
 * Flood protection
-* Built-in localzation (supported languages: Englist, French, and German)
+* Built-in localzation (supported languages: English, French, and German)
 
 # Example
 ```python
