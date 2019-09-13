@@ -37,7 +37,8 @@ configuration = {
 	'username': 'erkle',
 	'realname': 'Erkle Example Bot',
 	'alternate': 'erk1eb0t',
-	'server':'irc.efnet.org'
+	'server':'irc.efnet.org',
+	'encoding': 'UTF-8'
 }
 
 client = Erkle(configuration)
