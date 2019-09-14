@@ -110,7 +110,7 @@ def bla(connection):
 
 @irc.event("nick-taken", "erkle.events.dump")
 def glarp(connection,newnick):
-	print("You nick was changed to "+newnick)
+	print("Your nick was changed to "+newnick)
 
 @irc.event("action", "erkle.events.dump")
 def fed(connection,nickname,host,target,message):
@@ -150,6 +150,14 @@ def evp(connection,nickname,host,channel,reason):
 	else:
 		print(nickname+"("+host+") left "+channel)
 
+@irc.event("parted", "erkle.events.dump")
+def evp(connection,channel):
+	print("You left "+channel)
+
 @irc.event("join", "erkle.events.dump")
 def evj(connection,nickname,host,channel):
 	print(nickname+"("+host+") joined "+channel)
+
+@irc.event("joined", "erkle.events.dump")
+def evj(connection,channel):
+	print("You joined "+channel)

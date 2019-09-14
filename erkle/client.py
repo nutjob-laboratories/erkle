@@ -120,21 +120,20 @@ class Erkle:
 		else:
 			self.floodrate = 2
 
-		self._started = False
-		self.current_nickname = self.nickname
-
 		# If SSL isn't available, and SSL is set to
 		# be used, raise an error
 		if not SSL_AVAILABLE:
 			if self.usessl:
 				self._display_error_and_exit(NO_SSL_ERROR)
 
-		self._buffer = ""				# Incoming data buffer
-		self._channels = []				# Channel list buffer
-		self._thread = None				# If spawn()ed, stores the object's thread
-		self._whois = {}				# WHOIS data buffer
-		self._message_queue = []		# Outgoing message queue for flood protection
-		self._last_message_time = 0		# The time the last message was sent to the server
+		self._buffer = ""						# Incoming data buffer
+		self._channels = []						# Channel list buffer
+		self._thread = None						# If spawn()ed, stores the object's thread
+		self._whois = {}						# WHOIS data buffer
+		self._message_queue = []				# Outgoing message queue for flood protection
+		self._last_message_time = 0				# The time the last message was sent to the server
+		self._started = False					# Stores if the IRC connection has been started or not
+		self._current_nickname = self.nickname	# Stores the current nickname (for 433 errors)
 
 		self.hostname = ""				# The server's hostname
 		self.software = ""				# The server's software
@@ -159,7 +158,6 @@ class Erkle:
 		self.users = defaultdict(list)	# List of channel users
 		self.topic = {}					# Channel topics
 		self.channels = []				# Server channel list
-
 		self.tags = []					# Object tags
 		self.uptime = 0					# Object uptime, in seconds
 
@@ -171,9 +169,9 @@ class Erkle:
 	def _run(self):
 
 		# Start the uptime clock
-		self.stoptimer = threading.Event()
-		self.uptimer = Uptimer(self.stoptimer,self)
-		self.uptimer.start()
+		self._stoptimer = threading.Event()
+		self._uptime_clock = Uptimer(self._stoptimer,self)
+		self._uptime_clock.start()
 
 		# Set object state as "started"
 		self._started = True
@@ -182,12 +180,12 @@ class Erkle:
 		irc.call("connecting",self)
 
 		# Create the connection socket and connect to the server
-		self.connection = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-		self.connection.connect((self.server,self.port))
+		self._client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+		self._client.connect((self.server,self.port))
 
 		## SSL-ify the connection if needed
 		if self.usessl:
-			self.connection = ssl.wrap_socket(self.connection)
+			self._client = ssl.wrap_socket(self._client)
 
 		# Raise the "connect" event
 		irc.call("connect",self)
@@ -208,7 +206,7 @@ class Erkle:
 		while True:
 			try:
 				# Get incoming server data
-				line = self.connection.recv(4096)
+				line = self._client.recv(4096)
 
 				# Decode incoming server data
 				try:
@@ -227,11 +225,11 @@ class Erkle:
 				print(DISCONNECTED_ERROR)
 
 				# Stop the timer
-				self.stoptimer.set()
+				self._stoptimer.set()
 
 				# Shutdown the connection
-				self.connection.shutdown(socket.SHUT_RDWR)
-				self.connection.close()
+				self._client.shutdown(socket.SHUT_RDWR)
+				self._client.close()
 				return
 
 			# Step through the buffer and look for newlines
@@ -270,15 +268,15 @@ class Erkle:
 
 		# Nick collision
 		if tokens[1]=="433":
-			if self.current_nickname==self.nickname:
+			if self._current_nickname==self.nickname:
 				# Use alternate nick
 				if self.nickname == self.alternate:
 					self.nickname = self.nickname + "_"
-					self.current_nickname = self.nickname
+					self._current_nickname = self.nickname
 					self._send(f"NICK {self.nickname}")
 				else:
 					self.nickname = self.alternate
-					self.current_nickname = self.alternate
+					self._current_nickname = self.alternate
 					self._send(f"NICK {self.alternate}")
 				irc.call("nick-taken",self,self.nickname)
 				return
@@ -404,17 +402,16 @@ class Erkle:
 	#
 	# Sends a message to the IRC server
 	def _send(self,data):
-		#self.connection.send(bytes(data + "\r\n", "utf-8"))
 
-		sender = getattr(self.connection, 'write', self.connection.send)
+		sender = getattr(self._client, 'write', self._client.send)
 		try:
-			sender(bytes(data + "\r\n", "utf-8"))
+			sender(bytes(data + "\r\n", self.encoding))
 		except socket.error:
 			print(SEND_MESSAGE_ERROR)
 
 			# Shutdown the connection and exit
-			self.connection.shutdown(socket.SHUT_RDWR)
-			self.connection.close()
+			self._client.shutdown(socket.SHUT_RDWR)
+			self._client.close()
 			sys.exit(1)
 
 	# tag()
@@ -486,9 +483,16 @@ class Erkle:
 	# Terminates the thread, if the object is threaded
 	def kill(self):
 		# Stop the timer
-		self.stoptimer.set()
+		self._stoptimer.set()
 
 		if self._thread != None: sys.exit()
+
+	# socket()
+	# Arguments: none
+	#
+	# Returns the object's socket
+	def socket(self):
+		return self._client
 
 	# send()
 	# Arguments: string
@@ -500,7 +504,7 @@ class Erkle:
 	def send(self,data):
 
 		if self._not_started():
-			print(f"Can't send message \"{data}\"")
+			print(NOT_STARTED_ERROR.format(data))
 			sys.exit()
 
 		if self.flood_protection:
@@ -518,10 +522,8 @@ class Erkle:
 	# Sends a JOIN command to the IRC server
 	def join(self,channel,key=None):
 		if key:
-			# self.send("JOIN "+channel+" "+key)
 			self.send("JOIN "+channel+" "+key)
 		else:
-			# self.send("JOIN "+channel)
 			self.send("JOIN "+channel)
 
 	# part()
@@ -530,10 +532,8 @@ class Erkle:
 	# Sends a PART command to the IRC server
 	def part(self,channel,reason=None):
 		if reason:
-			# self.send("PART "+channel+" "+reason)
 			self.send("PART "+channel+" "+reason)
 		else:
-			# self.send("PART "+channel)
 			self.send("PART "+channel)
 
 	# quit()
@@ -542,16 +542,14 @@ class Erkle:
 	# Sends a QUIT command to the IRC server
 	def quit(self,reason=''):
 		if reason=='':
-			# self.send("QUIT")
 			self.send("QUIT")
 		else:
-			# self.send("QUIT "+reason)
 			self.send("QUIT "+reason)
-		self.connection.shutdown(socket.SHUT_RDWR)
-		self.connection.close()
+		self._client.shutdown(socket.SHUT_RDWR)
+		self._client.close()
 
 		# Stop the timer
-		self.stoptimer.set()
+		self._stoptimer.set()
 
 		# Exit the thread, if we're running in a thread
 		if self._thread != None: sys.exit()
@@ -561,7 +559,6 @@ class Erkle:
 	#
 	# Sends a PRIVMSG command to the IRC server
 	def privmsg(self,target,msg):
-		# self.send("PRIVMSG "+target+" "+msg)
 		self.send("PRIVMSG "+target+" "+msg)
 
 	# msg()
@@ -576,7 +573,6 @@ class Erkle:
 	#
 	# Sends a CTCP action message to the IRC server
 	def action(self,target,msg):
-		# self.send("PRIVMSG "+target+" \x01ACTION "+msg+"\x01")
 		self.send("PRIVMSG "+target+" \x01ACTION "+msg+"\x01")
 
 	# me()
@@ -591,7 +587,6 @@ class Erkle:
 	#
 	# Sends a NOTICE command to the IRC server
 	def notice(self,target,msg):
-		# self.send("NOTICE "+target+" "+msg)
 		self.send("NOTICE "+target+" "+msg)
 
 	# kick()
@@ -600,10 +595,8 @@ class Erkle:
 	# Sends a KICK command to the IRC server
 	def kick(self,target,channel,reason=None):
 		if reason:
-			# self.send("KICK "+channel+" "+target+" :"+reason)
 			self.send("KICK "+channel+" "+target+" :"+reason)
 		else:
-			# self.send("KICK "+channel+" "+target+" :")
 			self.send("KICK "+channel+" "+target+" :")
 
 	# invite()
@@ -611,7 +604,6 @@ class Erkle:
 	#
 	# Sends a INVITE command to the IRC server
 	def invite(self,user,channel):
-		# self.send("INVITE "+user+" "+channel)
 		self.send("INVITE "+user+" "+channel)
 
 	# whois()
@@ -619,7 +611,6 @@ class Erkle:
 	#
 	# Sends a WHOIS command to the IRC server
 	def whois(self,user):
-		# self.send("WHOIS "+user)
 		self.send("WHOIS "+user)
 
 	# list()
@@ -627,7 +618,6 @@ class Erkle:
 	#
 	# Sends a LIST command to the IRC server
 	def list(self):
-		# self.send("LIST")
 		self.send("LIST")
 
 	# away()
@@ -636,10 +626,8 @@ class Erkle:
 	# Sends an AWAY command to the IRC server
 	def away(self,msg=None):
 		if msg==None:
-			# self.send("AWAY")
 			self.send("AWAY")
 		else:
-			# self.send("AWAY "+msg)
 			self.send("AWAY "+msg)
 
 	# back()
@@ -647,7 +635,6 @@ class Erkle:
 	#
 	# Sends a BACK command to the IRC server
 	def back(self):
-		# self.send("BACK")
 		self.send("BACK")
 
 	# ban()
@@ -655,7 +642,6 @@ class Erkle:
 	#
 	# Sends a ban message to the IRC server
 	def ban(self,channel,mask):
-		# self.send("MODE "+channel+" +b "+mask)
 		self.send("MODE "+channel+" +b "+mask)
 
 	# unban()
@@ -663,7 +649,6 @@ class Erkle:
 	#
 	# Sends a unban message to the IRC server
 	def unban(self,channel,mask):
-		# self.send("MODE "+channel+" -b "+mask)
 		self.send("MODE "+channel+" -b "+mask)
 
 	# lock()
@@ -671,7 +656,6 @@ class Erkle:
 	#
 	# Sets a channel key on a channel
 	def lock(self,channel,key):
-		# self.send("MODE "+channel+" +k "+key)
 		self.send("MODE "+channel+" +k "+key)
 
 	# unlock()
@@ -679,7 +663,6 @@ class Erkle:
 	#
 	# Removes a channel key from a channel
 	def unlock(self,channel,key):
-		# self.send("MODE "+channel+" -k "+key)
 		self.send("MODE "+channel+" -k "+key)
 
 	# mode()
@@ -687,5 +670,4 @@ class Erkle:
 	#
 	# Sets (or unsets) a mode on a channel or person
 	def mode(self,target,mode):
-		# self.send("MODE "+target+" "+mode)
 		self.send("MODE "+target+" "+mode)
