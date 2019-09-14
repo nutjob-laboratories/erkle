@@ -100,7 +100,7 @@ def ntc(connection,sender,message):
 def mt(connection,motd):
 	print(motd)
 
-@irc.event("welcome", "erkle.events.dump")
+@irc.event("registered", "erkle.events.dump")
 def con(connection):
 	print("Registered with "+connection.server+":"+str(connection.port))
 
