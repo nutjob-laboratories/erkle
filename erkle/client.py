@@ -38,7 +38,7 @@ from erkle.decorator import irc
 from erkle.information import handle_information
 from erkle.users import handle_users
 from erkle.errors import handle_errors
-from erkle.clock import Uptimer
+from erkle.clock import Uptimer,Clock
 from erkle.common import *
 
 class Erkle:
@@ -120,6 +120,11 @@ class Erkle:
 		else:
 			self.floodrate = 2
 
+		if 'clock-frequency' in serverinfo:
+			self._clock_resolution = serverinfo['clock-frequency']
+		else:
+			self._clock_resolution = 1
+
 		# If SSL isn't available, and SSL is set to
 		# be used, raise an error
 		if not SSL_AVAILABLE:
@@ -168,10 +173,16 @@ class Erkle:
 	# and handles them.
 	def _run(self):
 
+		# Create "stop clocks" event
+		self._stop_clocks = threading.Event()
+
 		# Start the uptime clock
-		self._stoptimer = threading.Event()
-		self._uptime_clock = Uptimer(self._stoptimer,self)
+		self._uptime_clock = Uptimer(self._stop_clocks,self)
 		self._uptime_clock.start()
+
+		# Start the uptime clock
+		self._regular_clock = Clock(self._stop_clocks,self)
+		self._regular_clock.start()
 
 		# Set object state as "started"
 		self._started = True
@@ -224,8 +235,8 @@ class Erkle:
 			except socket.error:
 				print(DISCONNECTED_ERROR)
 
-				# Stop the timer
-				self._stoptimer.set()
+				# Stop timers
+				self._stop_clocks.set()
 
 				# Shutdown the connection
 				self._client.shutdown(socket.SHUT_RDWR)
@@ -336,12 +347,16 @@ class Erkle:
 		# User management
 		if handle_users(self,line): return
 
+	def _regular_clock_tick(self):
+		irc.call("tick",self)
+
 	# _uptime_clock_tick()
 	# Arguments: none
 	#
 	# Increments the uptime by one second, and calls
 	# _sendqueue() to send queued messages.
 	def _uptime_clock_tick(self):
+		# self.uptime = self.uptime + 1
 		self.uptime = self.uptime + 1
 
 		if self.flood_protection:
@@ -482,8 +497,8 @@ class Erkle:
 	#
 	# Terminates the thread, if the object is threaded
 	def kill(self):
-		# Stop the timer
-		self._stoptimer.set()
+		# Stop timers
+		self._stop_clocks.set()
 
 		if self._thread != None: sys.exit()
 
@@ -548,8 +563,8 @@ class Erkle:
 		self._client.shutdown(socket.SHUT_RDWR)
 		self._client.close()
 
-		# Stop the timer
-		self._stoptimer.set()
+		# Stop timers
+		self._stop_clocks.set()
 
 		# Exit the thread, if we're running in a thread
 		if self._thread != None: sys.exit()

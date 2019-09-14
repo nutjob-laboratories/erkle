@@ -28,6 +28,10 @@ import sys
 
 print("Example bot for Erkle "+ERKLE_VERSION)
 
+@irc.event("tick")
+def fed(connection):
+	print("TICK")
+
 @irc.event("private")
 def fed(connection,nickname,host,message):
 	if message.lower().strip()=="list":
@@ -66,7 +70,8 @@ uinfo = {
 	'encoding': 'utf-8',
 	'flood-protection': True,
 	'flood-rate': 2,
-	'language': 'en'
+	'language': 'en',
+	'clock-frequency': 1
 }
 c = Erkle(uinfo)
 c.connect()
