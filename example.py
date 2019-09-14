@@ -28,33 +28,29 @@ import sys
 
 print("Example bot for Erkle "+ERKLE_VERSION)
 
-@irc.event("tick")
-def fed(connection):
-	print("TICK")
-
 @irc.event("private")
-def fed(connection,nickname,host,message):
+def fevent(connection,nickname,host,message):
 	if message.lower().strip()=="list":
 		connection.list()
 
 @irc.event("private")
-def fed(connection,nickname,host,message):
+def fevent(connection,nickname,host,message):
 	if message.lower().strip()=="quit":
 		connection.quit()
 		sys.exit()
 
 @irc.event("private","quiet")
-def fed(connection,nickname,host,message):
+def fevent(connection,nickname,host,message):
 	if message.lower().strip()=="quiet":
 		c.disable("erkle.events.dump")
 
 @irc.event("private","quiet")
-def fed(connection,nickname,host,message):
+def fevent(connection,nickname,host,message):
 	if message.lower().strip()=="loud":
 		c.enable("erkle.events.dump")
 
 @irc.event("registered")
-def evw(connection):
+def fevent(connection):
 	print("Registered!")
 	connection.join("#quirc")
 
