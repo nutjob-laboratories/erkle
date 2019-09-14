@@ -180,7 +180,7 @@ class Erkle:
 		self._uptime_clock = Uptimer(self._stop_clocks,self)
 		self._uptime_clock.start()
 
-		# Start the uptime clock
+		# Start the tick clock
 		self._regular_clock = Clock(self._stop_clocks,self)
 		self._regular_clock.start()
 
@@ -347,6 +347,10 @@ class Erkle:
 		# User management
 		if handle_users(self,line): return
 
+	# _regular_clock_tick()
+	# Arguments: none
+	#
+	# Executes every X seconds (set by the clock-frequency setting)
 	def _regular_clock_tick(self):
 		irc.call("tick",self)
 
@@ -401,6 +405,13 @@ class Erkle:
 		print(ERROR_WORD+": "+msg)
 		sys.exit(1)
 
+	# _raise_runtime_error()
+	# Arguments: string
+	#
+	# Raises a runtime error
+	def _raise_runtime_error(self,msg):
+		raise RuntimeError(msg)
+
 	# _sendqueue()
 	# Arguments: none
 	#
@@ -412,7 +423,7 @@ class Erkle:
 			self._send(msg)
 			self._last_message_time = self.uptime
 
-	# send()
+	# _send()
 	# Arguments: string
 	#
 	# Sends a message to the IRC server
@@ -497,17 +508,27 @@ class Erkle:
 	#
 	# Terminates the thread, if the object is threaded
 	def kill(self):
+
+		if self._not_started():
+			self._raise_runtime_error(NOT_STARTED_ERROR)
+
 		# Stop timers
 		self._stop_clocks.set()
 
-		if self._thread != None: sys.exit()
+		if self._thread != None:
+			sys.exit()
+		else:
+			self._raise_runtime_error(NOT_THREADED_ERROR)
 
 	# socket()
 	# Arguments: none
 	#
 	# Returns the object's socket
 	def socket(self):
-		return self._client
+		if self._not_started():
+			self._raise_runtime_error(NO_SOCKET_ERROR)
+		else:
+			return self._client
 
 	# send()
 	# Arguments: string
@@ -519,8 +540,7 @@ class Erkle:
 	def send(self,data):
 
 		if self._not_started():
-			print(NOT_STARTED_ERROR.format(data))
-			sys.exit()
+			self._raise_runtime_error(NOT_STARTED_MESSAGE_ERROR.format(data))
 
 		if self.flood_protection:
 			if (self._last_message_time + self.floodrate) <= self.uptime:

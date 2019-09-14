@@ -24,12 +24,15 @@ from erkle.common import *
 
 DEFAULT_REALNAME = APPLICATION_NAME + " " + ERKLE_VERSION + " client IRC"
 
-NO_NICKNAME_IN_DICT_ERROR = "Clé 'nickname' manquante dans le dictionnaire de configuration"
-NO_SERVER_IN_DICT_ERROR = "Clé 'server' manquante dans le dictionnaire de configuration"
-NO_SSL_ERROR = "SSL/TLS n'est pas disponible. Veuillez installer pyOpenSSL"
-DISCONNECTED_ERROR = "Déconnecté du serveur"
-SEND_MESSAGE_ERROR = "Impossible d'envoyer un message: déconnecté du serveur"
-NOT_STARTED_ERROR = "Connexion non établie ne peut pas envoyer le message '{}'"
+NO_NICKNAME_IN_DICT_ERROR = "Clé 'nickname' manquante dans le dictionnaire de configuration."
+NO_SERVER_IN_DICT_ERROR = "Clé 'server' manquante dans le dictionnaire de configuration."
+NO_SSL_ERROR = "SSL/TLS n'est pas disponible. Veuillez installer pyOpenSSL."
+DISCONNECTED_ERROR = "Déconnecté du serveur."
+SEND_MESSAGE_ERROR = "Impossible d'envoyer un message: déconnecté du serveur."
+NOT_STARTED_MESSAGE_ERROR = "Connexion non établie ne peut pas envoyer le message '{}'"
+NOT_THREADED_ERROR = "La connexion n'a pas été démarrée avec spawn()! En sortant..."
+NO_SOCKET_ERROR = "Le socket n'a pas été créé, la connexion n'a pas été démarrée."
+NOT_STARTED_ERROR = "La connexion n'a pas été démarrée."
 
 ERROR_WORD = "Erreur"
 UNKNOWN_ERROR = "Erreur inconnue"
