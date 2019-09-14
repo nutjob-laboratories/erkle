@@ -2,11 +2,35 @@
 	<img src="https://github.com/nutjob-laboratories/erkle/raw/master/images/logo_300.png">
 </p>
 
-An easy to use, event-driven, low-level IRC library for Python 3. It is being written as a replacement for Twisted in the [Erk IRC Client](https://github.com/nutjob-laboratories/erk).
-
-The current version of **Erkle** is 0.033.
+An easy to use, event-driven, low-level IRC library for Python 3. It is being written as a replacement for Twisted in the [Erk IRC Client](https://github.com/nutjob-laboratories/erk). The current version of **Erkle** is 0.033.
 
 **Erkle** is not feature complete, but it is complete enough for most simple IRC bots.
+
+# Features
+
+* Small and easy to bundle with applications
+* Fast
+* Multiple connection/client support
+* SSL/TLS connection support
+* Flood protection
+* Built-in localzation (supported languages: English, French, and German)
+
+# Requirements
+
+* [sys](https://docs.python.org/3/library/sys.html)
+* [os](https://docs.python.org/3/library/os.html)
+* [socket](https://docs.python.org/3/library/socket.html)
+* [collections](https://docs.python.org/3/library/collections.html)
+* [string](https://docs.python.org/3/library/string.html)
+* [threading](https://docs.python.org/3/library/threading.html)
+* [importlib](https://docs.python.org/3/library/importlib.html)
+* [ssl](https://docs.python.org/3/library/ssl.html) (optional)
+
+**Erkle** uses, with one exception, only modules from the standary Python library. The `ssl` library is only necessary if you want to connected to an IRC server via SSL/TLS. To use the `ssl` module, the OpenSSL library must be installed. The easiest way to install this library is to use `pip` to install the pyOpenSSL library:
+
+```
+pip install pyopenssl
+```
 
 # Example
 ```python
@@ -34,32 +58,6 @@ configuration = {
 
 client = Erkle(configuration)
 client.connect()
-```
-
-# Features
-
-* Small and easy to bundle with applications
-* Fast
-* Multiple connection/client support
-* SSL/TLS connection support
-* Flood protection
-* Built-in localzation (supported languages: English, French, and German)
-
-# Requirements
-
-* [sys](https://docs.python.org/3/library/sys.html)
-* [os](https://docs.python.org/3/library/os.html)
-* [socket](https://docs.python.org/3/library/socket.html)
-* [collections](https://docs.python.org/3/library/collections.html)
-* [string](https://docs.python.org/3/library/string.html)
-* [threading](https://docs.python.org/3/library/threading.html)
-* [importlib](https://docs.python.org/3/library/importlib.html)
-* [ssl](https://docs.python.org/3/library/ssl.html) (optional)
-
-**Erkle** uses, with one exception, only modules from the standary Python library. The `ssl` library is only necessary if you want to connected to an IRC server via SSL/TLS. To use the `ssl` module, the OpenSSL library must be installed. The easiest way to install this library is to use `pip` to install the pyOpenSSL library:
-
-```
-pip install pyopenssl
 ```
 
 # Another IRC library? Why not use Twisted/irclib/...?
