@@ -52,7 +52,7 @@ def fevent(connection,nickname,host,message):
 @irc.event("registered")
 def fevent(connection):
 	print("Registered!")
-	connection.join("#quirc")
+	connection.join("#erklelib")
 
 uinfo = {
 	'nickname': 'erklebot',
@@ -67,7 +67,8 @@ uinfo = {
 	'flood-protection': True,
 	'flood-rate': 2,
 	'language': 'en',
-	'clock-frequency': 1
+	'clock-frequency': 1,
+	'multithreaded': False
 }
 c = Erkle(uinfo)
 c.connect()

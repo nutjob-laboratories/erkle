@@ -125,6 +125,11 @@ class Erkle:
 		else:
 			self._clock_resolution = 1
 
+		if 'multithreaded' in serverinfo:
+			self._multithreaded = serverinfo['multithreaded']
+		else:
+			self._multithreaded = False
+
 		# If SSL isn't available, and SSL is set to
 		# be used, raise an error
 		if not SSL_AVAILABLE:
@@ -133,38 +138,39 @@ class Erkle:
 
 		self._buffer = ""						# Incoming data buffer
 		self._channels = []						# Channel list buffer
-		self._thread = None						# If spawn()ed, stores the object's thread
+		self._thread = None						# If multithreaded, stores the object's thread
 		self._whois = {}						# WHOIS data buffer
 		self._message_queue = []				# Outgoing message queue for flood protection
 		self._last_message_time = 0				# The time the last message was sent to the server
 		self._started = False					# Stores if the IRC connection has been started or not
 		self._current_nickname = self.nickname	# Stores the current nickname (for 433 errors)
 
-		self.hostname = ""				# The server's hostname
-		self.software = ""				# The server's software
-		self.options = []				# The server's options
-		self.network = ""				# The IRC server's network
-		self.commands = []				# Commands the server supports
-		self.maxchannels = 0			# Maximum number of channels
-		self.maxnicklen = 0				# Maximum nick length
-		self.chanlimit = []				# Server channel limit
-		self.nicklen = 0				# Server nick length
-		self.chanellen = 0				# Server channel name length
-		self.topiclen = 0				# Server channel topic length
-		self.kicklen = 0				# Server kick length
-		self.awaylen = 0				# Server away length
-		self.maxtargets = 0				# Server maximum msg targets
-		self.modes = 0					# Server maximum channel modes
-		self.chantypes = []				# What channel types the server uses
-		self.prefix = []				# Server status prefixes
-		self.chanmodes = []				# What channel modes the server uses
-		self.casemapping = ""			# Server case mapping
-		self.spoofed = ""				# The client's spoofed host
-		self.users = defaultdict(list)	# List of channel users
-		self.topic = {}					# Channel topics
-		self.channels = []				# Server channel list
-		self.tags = []					# Object tags
-		self.uptime = 0					# Object uptime, in seconds
+		self.hostname = ""							# The server's hostname
+		self.software = ""							# The server's software
+		self.options = []							# The server's options
+		self.network = ""							# The IRC server's network
+		self.commands = []							# Commands the server supports
+		self.maxchannels = 0						# Maximum number of channels
+		self.maxnicklen = 0							# Maximum nick length
+		self.chanlimit = []							# Server channel limit
+		self.nicklen = 0							# Server nick length
+		self.chanellen = 0							# Server channel name length
+		self.topiclen = 0							# Server channel topic length
+		self.kicklen = 0							# Server kick length
+		self.awaylen = 0							# Server away length
+		self.maxtargets = 0							# Server maximum msg targets
+		self.modes = 0								# Server maximum channel modes
+		self.chantypes = []							# What channel types the server uses
+		self.prefix = []							# Server status prefixes
+		self.chanmodes = []							# What channel modes the server uses
+		self.casemapping = ""						# Server case mapping
+		self.spoofed = ""							# The client's spoofed host
+		self.users = defaultdict(list)				# List of channel users
+		self.topic = {}								# Channel topics
+		self.channels = []							# Server channel list
+		self.tags = []								# Object tags
+		self.uptime = 0								# Object uptime, in seconds
+		self.multithreaded = self._multithreaded	# If the object is multithreaded or not
 
 	# _run()
 	# Arguments: none
@@ -485,16 +491,12 @@ class Erkle:
 	#
 	# Calls _run().
 	def connect(self):
-		self._run()
-
-	# spawn()
-	# Arguments: none
-	#
-	# Calls _run() and runs it in a separate thread.
-	def spawn(self):
-		t = threading.Thread(name=f"{self.server}:{str(self.port)}",target=self._run)
-		self._thread = t
-		t.start()
+		if self._multithreaded:
+			t = threading.Thread(name=f"{self.server}:{str(self.port)}",target=self._run)
+			self._thread = t
+			t.start()
+		else:
+			self._run()
 
 	# thread()
 	# Arguments: none
