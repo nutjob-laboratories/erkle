@@ -10,7 +10,7 @@ An easy to use, event-driven, low-level IRC library for Python 3. It is being wr
 
 # Features
 
-* Small and easy to bundle with applications
+* Small (less than 150KB!) and easy to bundle with applications
 * Fast
 * Multiple connection/client support
 * SSL/TLS connection support
