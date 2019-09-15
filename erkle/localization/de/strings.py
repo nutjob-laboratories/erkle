@@ -33,6 +33,7 @@ NOT_STARTED_MESSAGE_ERROR = "Verbindung nicht gestartet; kann die Nachricht '{}'
 NOT_THREADED_ERROR = "Verbindung wurde nicht mit spawn() gestartet! Verlassen..."
 NO_SOCKET_ERROR = "Socket wurde nicht erstellt, Verbindung wurde nicht gestartet."
 NOT_STARTED_ERROR = "Verbindung nicht gestartet."
+WRONG_VARIABLE_TYPE = "Falscher Variablentyp für '{key}' ({rec} empfangen, {exp} erwartet)."
 
 ERROR_WORD = "Error"
 UNKNOWN_ERROR = "Unbekannter Fehler"

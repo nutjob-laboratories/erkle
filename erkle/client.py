@@ -67,6 +67,8 @@ class Erkle:
 		if self.nickname == None:
 			self._display_error_and_exit(NO_NICKNAME_IN_DICT_ERROR)
 
+		self._check_configuration_input_type('nickname',self.nickname,str())
+
 		self.username = self.nickname
 		if 'username' in serverinfo:
 			self.username = serverinfo['username']
@@ -123,12 +125,44 @@ class Erkle:
 		if 'clock-frequency' in serverinfo:
 			self._clock_resolution = serverinfo['clock-frequency']
 		else:
-			self._clock_resolution = 1
+			self._clock_resolution = 1.0
 
 		if 'multithreaded' in serverinfo:
 			self._multithreaded = serverinfo['multithreaded']
 		else:
 			self._multithreaded = False
+
+		# Check to make sure all config input is the right variable type
+		self._check_configuration_input_type('username',self.username,str())
+		self._check_configuration_input_type('realname',self.realname,str())
+		self._check_configuration_input_type('alternate',self.alternate,str())
+		self._check_configuration_input_type('server',self.server,str())
+		self._check_configuration_input_type('port',self.port,int())
+		self._check_configuration_input_type('ssl',self.usessl,bool())
+		self._check_configuration_input_type('encoding',self.encoding,str())
+		self._check_configuration_input_type('flood-protection',self.flood_protection,bool())
+		self._check_configuration_input_type('flood-rate',self.floodrate,int())
+		self._check_configuration_input_type('clock-frequency',self._clock_resolution,float())
+		self._check_configuration_input_type('multithreaded',self._multithreaded,bool())
+
+		# Check to make sure that the password (if there is one) is a string
+		if self.password!=None:
+			if type(self.password)!=type(str):
+
+				if type(var)==type(str()):
+					intype = "string"
+				elif type(var)==type(int()):
+					intype = "integer"
+				elif type(var)==type(float()):
+					intype = "float"
+				elif type(var)==type(bool()):
+					intype = "boolean"
+				else:
+					intype = 'unknown'
+
+				print(ERROR_WORD+": "+WRONG_VARIABLE_TYPE.format(key='password',rec=intype,exp='string'))
+				sys.exit(1)
+
 
 		# If SSL isn't available, and SSL is set to
 		# be used, raise an error
@@ -402,6 +436,39 @@ class Erkle:
 			to_import = [name for name in module_dict if not name.startswith('_')]
 		globals().update({name: module_dict[name] for name in to_import})
 
+	# _check_configuration_input_type()
+	# Arguments: string, variuable, variable type
+	#
+	# Checks to make sure a configuration input is
+	# the proper variable type; display an error and
+	# exit if it isn't
+	def _check_configuration_input_type(self,cname,var,typ):
+		if type(var)!=type(typ):
+			
+			if type(var)==type(str()):
+				intype = "string"
+			elif type(var)==type(int()):
+				intype = "integer"
+			elif type(var)==type(float()):
+				intype = "float"
+			elif type(var)==type(bool()):
+				intype = "boolean"
+			else:
+				intype = 'unknown'
+
+			if type(typ)==type(str()):
+				reqtype = "string"
+			elif type(typ)==type(int()):
+				reqtype = "integer"
+			elif type(typ)==type(float()):
+				reqtype = "float"
+			elif type(typ)==type(bool()):
+				reqtype = "boolean"
+			else:
+				reqtype = 'unknown'
+
+			print(ERROR_WORD+": "+WRONG_VARIABLE_TYPE.format(key=cname,rec=intype,exp=reqtype))
+			sys.exit(1)
 
 	# _display_error_and_exit()
 	# Arguments: string

@@ -67,7 +67,7 @@ uinfo = {
 	'flood-protection': True,
 	'flood-rate': 2,
 	'language': 'en',
-	'clock-frequency': 1,
+	'clock-frequency': 1.0,
 	'multithreaded': False
 }
 c = Erkle(uinfo)

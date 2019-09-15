@@ -33,6 +33,7 @@ NOT_STARTED_MESSAGE_ERROR = "Connection not started; can't send message '{}'"
 NOT_THREADED_ERROR = "Connection was not started with spawn()! Exiting..."
 NO_SOCKET_ERROR = "Socket has not been created, connection has not been started."
 NOT_STARTED_ERROR = "Connection not started."
+WRONG_VARIABLE_TYPE = "Wrong variable type for '{key}' (received {rec}, expected {exp})."
 
 ERROR_WORD = "Error"
 UNKNOWN_ERROR = "Unknown error"
