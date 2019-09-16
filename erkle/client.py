@@ -665,7 +665,9 @@ class Erkle:
 	#
 	# Sends a PRIVMSG command to the IRC server
 	def privmsg(self,target,msg):
-		self.send("PRIVMSG "+target+" "+msg)
+		if type(target)==type(list()):
+			target = ",".join(target)
+		self.send("PRIVMSG "+target+" :"+msg)
 
 	# msg()
 	# Arguments: string, string
@@ -679,7 +681,9 @@ class Erkle:
 	#
 	# Sends a CTCP action message to the IRC server
 	def action(self,target,msg):
-		self.send("PRIVMSG "+target+" \x01ACTION "+msg+"\x01")
+		if type(target)==type(list()):
+			target = ",".join(target)
+		self.send("PRIVMSG "+target+" :\x01ACTION "+msg+"\x01")
 
 	# me()
 	# Arguments: string, string
@@ -693,7 +697,9 @@ class Erkle:
 	#
 	# Sends a NOTICE command to the IRC server
 	def notice(self,target,msg):
-		self.send("NOTICE "+target+" "+msg)
+		if type(target)==type(list()):
+			target = ",".join(target)
+		self.send("NOTICE "+target+" :"+msg)
 
 	# kick()
 	# Arguments: string, string, string
