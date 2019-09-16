@@ -35,5 +35,9 @@ NO_SOCKET_ERROR = "Le socket n'a pas été créé, la connexion n'a pas été d�
 NOT_STARTED_ERROR = "La connexion n'a pas été démarrée."
 WRONG_VARIABLE_TYPE = "Type de variable incorrect pour '{key}' ({rec} reçu, {exp} attendu)."
 
+CANNOT_ADD_ASTERIX_TAG = "'*' n'est pas un nom de tag valide."
+
+CANNOT_REMOVE_ASTERIX_TAG = "Impossible de supprimer la balise '*' (balise non valide)."
+
 ERROR_WORD = "Erreur"
 UNKNOWN_ERROR = "Erreur inconnue"

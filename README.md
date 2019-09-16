@@ -1,10 +1,10 @@
 <p align="center">
 	<img src="https://github.com/nutjob-laboratories/erkle/raw/master/images/logo_300.png"><br>
-	<a href="https://github.com/nutjob-laboratories/erkle/blob/master/documentation/Erkle-IRC-Library.pdf"><b>Documentation for Erkle 0.035</b></a><br>
+	<a href="https://github.com/nutjob-laboratories/erkle/blob/master/documentation/Erkle-IRC-Library.pdf"><b>Documentation for Erkle 0.036</b></a><br>
 	<a href="https://github.com/nutjob-laboratories/erkle/raw/master/downloads/erkle-irclib.zip"><b>Download the Erkle IRC Library for Python 3</b></a>
 </p>
 
-An easy to use, event-driven, low-level IRC library for Python 3. It is being written as a replacement for Twisted in the [Erk IRC Client](https://github.com/nutjob-laboratories/erk). The current version of **Erkle** is 0.035.
+An easy to use, event-driven, low-level IRC library for Python 3. It is being written as a replacement for Twisted in the [Erk IRC Client](https://github.com/nutjob-laboratories/erk). The current version of **Erkle** is 0.036.
 
 **Erkle** is not feature complete, but it is complete enough for most simple IRC bots.
 

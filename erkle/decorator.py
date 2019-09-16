@@ -45,6 +45,7 @@ class EventHandler:
 					for t in eobj.tags:
 						# The hooked function has the Erkle object's tag
 						if t in h.tags: DOIT = True
+					if '*' in h.tags: DOIT = True
 
 				nogo = False
 				for t in h.tags:

@@ -519,6 +519,7 @@ class Erkle:
 	# Adds a tag to the Erkle object
 	def tag(self,*args):
 		for t in args:
+			if t=='*': self._raise_runtime_error(CANNOT_ADD_ASTERIX_TAG)
 			self.tags.append(t)
 			irc._disabled = list(dict.fromkeys(irc._disabled))
 
@@ -528,6 +529,7 @@ class Erkle:
 	# Removes a tag from the Erkle object
 	def untag(self,*args):
 		for t in args:
+			if t=='*': self._raise_runtime_error(CANNOT_REMOVE_ASTERIX_TAG)
 			try:
 				self.tags.remove(t)
 			except:
