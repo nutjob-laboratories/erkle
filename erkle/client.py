@@ -701,6 +701,24 @@ class Erkle:
 			target = ",".join(target)
 		self.send("NOTICE "+target+" :"+msg)
 
+	# cnotice()
+	# Arguments: string, string, string
+	#
+	# Sends a CNOTICE command to the IRC server
+	def cnotice(self,target,channel,msg):
+		if type(target)==type(list()):
+			target = ",".join(target)
+		self.send("CNOTICE "+target+" "+channel+" :"+msg)
+
+	# cprivmsg()
+	# Arguments: string, string, string
+	#
+	# Sends a CPRIVMSG command to the IRC server
+	def cprivmsg(self,target,channel,msg):
+		if type(target)==type(list()):
+			target = ",".join(target)
+		self.send("CPRIVMSG "+target+" "+channel+" :"+msg)
+
 	# kick()
 	# Arguments: string, string, string
 	#
