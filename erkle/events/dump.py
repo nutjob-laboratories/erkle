@@ -43,15 +43,25 @@ def evlist(connection,chanlist):
 			print(e[0]+" ("+numusers+")")
 	print("End channel list")
 
+# @irc.event("whois", "erkle.events.dump")
+# def evwhois(connection,nickname,user,host,realname,server,idle,signon,channels,privs):
+# 	print(f"{nickname} {user}@{host} ({realname})")
+# 	print(f"{nickname} is connected to {server}")
+# 	print(f"{nickname} has been {str(idle)} for idle second(s)")
+# 	print(f"{nickname} connected on {signon}")
+# 	if len(channels)>0: print(f"{nickname} is in {','.join(channels)}")
+# 	if privs:
+# 		print(privs)
+
 @irc.event("whois", "erkle.events.dump")
-def evwhois(connection,nickname,user,host,realname,server,idle,signon,channels,privs):
-	print(f"{nickname} {user}@{host} ({realname})")
-	print(f"{nickname} is connected to {server}")
-	print(f"{nickname} has been {str(idle)} for idle second(s)")
-	print(f"{nickname} connected on {signon}")
-	if len(channels)>0: print(f"{nickname} is in {','.join(channels)}")
-	if privs:
-		print(privs)
+def evwhois(connection,whois):
+	print(f"{whois.nickname} {whois.username}@{whois.host} ({whois.realname})")
+	print(f"{whois.nickname} is connected to {whois.server}")
+	print(f"{whois.nickname} has been {str(whois.idle)} for idle second(s)")
+	print(f"{whois.nickname} connected on {whois.signon}")
+	if len(whois.channels)>0: print(f"{whois.nickname} is in {','.join(whois.channels)}")
+	if whois.privs:
+		print(whois.privs)
 
 @irc.event('kick', "erkle.events.dump")
 def evkick(connection,nickname,host,channel,target,message):
@@ -134,7 +144,19 @@ def ni(connection,nickname,host,newnick):
 
 @irc.event("names", "erkle.events.dump")
 def evn(connection,channel,userlist):
-	print(channel+" "+",".join(userlist))
+	#print(channel+" "+",".join(userlist))
+	ul = []
+	for u in userlist:
+		us = ''
+		if u.op: us = us + '@'
+		if u.voiced: us = us + '+'
+		if u.owner: us = us + '~'
+		if u.halfop: us = us + '%'
+		if u.admin: us = us + '&'
+		us = us + u.nickname
+		ul.append(us)
+
+	print(channel+" "+",".join(ul))
 
 @irc.event("quit", "erkle.events.dump")
 def evq(connection,nickname,host,reason):

@@ -20,5 +20,25 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-APPLICATION_NAME = "Erkle"
-ERKLE_VERSION = "0.040"
+class User:
+	def __init__(self,nickname,username,host,op,voiced,owner,admin,halfop):
+		self.nickname = nickname
+		self.username = username
+		self.host = host
+		self.op = op
+		self.voiced = voiced
+		self.owner = owner
+		self.admin = admin
+		self.halfop = halfop
+
+class Whois:
+	def __init__(self,nickname):
+		self.nickname = nickname
+		self.username = ""
+		self.host = ""
+		self.realname = ""
+		self.privs = None
+		self.idle = 0
+		self.signon = 0
+		self.channels = []
+		self.server = ""

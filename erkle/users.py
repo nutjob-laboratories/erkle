@@ -22,18 +22,45 @@
 
 from erkle.decorator import irc
 from erkle.common import *
+from erkle.data import *
 
-class WhoisEntry:
-	def __init__(self,nickname):
-		self.nickname = nickname
-		self.user = ""
-		self.host = ""
-		self.realname = ""
-		self.privs = None
-		self.idle = 0
-		self.signon = "0"
-		self.channels = []
-		self.server = ""
+
+def parse_username(user):
+	isop = False
+	isvoiced = False
+	isowner = False
+	isadmin = False
+	ishalfop = False
+
+	parsed = user.split('!')
+	nickname = parsed[0]
+	hostmask = parsed[1]
+	parsed = hostmask.split('@')
+	username = parsed[0]
+	host = parsed[1]
+
+	rawnick = ''
+	for c in nickname:
+		if c=='@':
+			isop = True
+			continue
+		if c=='%':
+			ishalfop = True
+			continue
+		if c=='+':
+			isvoiced = True
+			continue
+		if c=='~':
+			isowner = True
+			continue
+		if c=='&':
+			isadmin = True
+			continue
+		rawnick = rawnick + c
+
+	return User(rawnick,username,host,isop,isvoiced,isowner,isadmin,ishalfop)
+
+
 
 def handle_users(eobj,line):
 
@@ -42,7 +69,7 @@ def handle_users(eobj,line):
 	# ENDOFWHOIS
 	if tokens[1]=="318":
 		tokens.pop(0)	# remove server
-		tokens.pop(0)	# reove message type
+		tokens.pop(0)	# remove message type
 		tokens.pop(0)	# remove nick
 
 		nickname = tokens.pop(0)
@@ -50,7 +77,8 @@ def handle_users(eobj,line):
 		if nickname in eobj._whois:
 			whois = eobj._whois[nickname]
 
-			irc.call("whois",eobj,whois.nickname,whois.user,whois.host,whois.realname,whois.server,whois.idle,str(whois.signon),whois.channels,whois.privs)
+			#irc.call("whois",eobj,whois.nickname,whois.user,whois.host,whois.realname,whois.server,whois.idle,str(whois.signon),whois.channels,whois.privs)
+			irc.call("whois",eobj,whois)
 			del eobj._whois[nickname]
 
 		return True
@@ -58,7 +86,7 @@ def handle_users(eobj,line):
 	# WHOISUSER
 	if tokens[1]=="311":
 		tokens.pop(0)	# remove server
-		tokens.pop(0)	# reove message type
+		tokens.pop(0)	# remove message type
 		tokens.pop(0)	# remove nick
 
 		nickname = tokens.pop(0)
@@ -70,8 +98,8 @@ def handle_users(eobj,line):
 		realname = ' '.join(tokens)
 		realname = realname [1:]
 
-		eobj._whois[nickname] = WhoisEntry(nickname)
-		eobj._whois[nickname].user = username
+		eobj._whois[nickname] = Whois(nickname)
+		eobj._whois[nickname].username = username
 		eobj._whois[nickname].host = host
 		eobj._whois[nickname].realname = realname
 
@@ -80,7 +108,7 @@ def handle_users(eobj,line):
 	# WHOISSERVER
 	if tokens[1]=="312":
 		tokens.pop(0)	# remove server
-		tokens.pop(0)	# reove message type
+		tokens.pop(0)	# remove message type
 		tokens.pop(0)	# remove nick
 
 		nickname = tokens.pop(0)
@@ -97,7 +125,7 @@ def handle_users(eobj,line):
 	# WHOISOPERATOR
 	if tokens[1]=="313":
 		tokens.pop(0)	# remove server
-		tokens.pop(0)	# reove message type
+		tokens.pop(0)	# remove message type
 		tokens.pop(0)	# remove nick
 
 		nickname = tokens.pop(0)
@@ -113,7 +141,7 @@ def handle_users(eobj,line):
 	# WHOISIDLE
 	if tokens[1]=="317":
 		tokens.pop(0)	# remove server
-		tokens.pop(0)	# reove message type
+		tokens.pop(0)	# remove message type
 		tokens.pop(0)	# remove nick
 
 		nickname = tokens.pop(0)
@@ -140,7 +168,7 @@ def handle_users(eobj,line):
 	# WHOISCHANNELS
 	if tokens[1]=="319":
 		tokens.pop(0)	# remove server
-		tokens.pop(0)	# reove message type
+		tokens.pop(0)	# remove message type
 		tokens.pop(0)	# remove nick
 
 		nickname = tokens.pop(0)
@@ -200,17 +228,24 @@ def handle_users(eobj,line):
 			# Remove user from userlist
 			cleaned = []
 			for u in eobj.users[channel]:
-				cu = u.replace('@','')
-				cu = cu.replace('+','')
-				cu = cu.replace('~','')
-				cu = cu.replace('%','')
-				cu = cu.replace('&','')
 
-				parsed = cu.split('!')
-				if len(parsed)==2:
-					if parsed[0].lower()!=target.lower(): cleaned.append(u)
-				else:
-					if u.lower()!=target.lower(): cleaned.append(u)
+				if u.nickname==target:
+					continue
+
+				cleaned.append(u)
+
+				# cu = u.replace('@','')
+				# cu = cu.replace('+','')
+				# cu = cu.replace('~','')
+				# cu = cu.replace('%','')
+				# cu = cu.replace('&','')
+
+				# parsed = cu.split('!')
+				# if len(parsed)==2:
+				# 	if parsed[0].lower()!=target.lower(): cleaned.append(u)
+				# else:
+				# 	if u.lower()!=target.lower(): cleaned.append(u)
+
 			eobj.users[channel] = cleaned
 
 			# Resend the new channel user list
@@ -267,40 +302,46 @@ def handle_users(eobj,line):
 			cleaned = []
 			found = False
 			for cuser in eobj.users[channel]:
-				if cuser==nickname:
+
+				if cuser.nickname==nickname:
 					found = True
-					cleaned.append(newnick)
 					continue
-				if '@' in cuser:
-					nuser = cuser.replace('@','')
-					if nuser==nickname:
-						found = True
-						cleaned.append(f"@{newnick}")
-						continue
-				if '+' in cuser:
-					nuser = cuser.replace('+','')
-					if nuser==nickname:
-						found = True
-						cleaned.append(f"+{newnick}")
-						continue
-				if '~' in cuser:
-					nuser = cuser.replace('~','')
-					if nuser==nickname:
-						found = True
-						cleaned.append(f"~{newnick}")
-						continue
-				if '&' in cuser:
-					nuser = cuser.replace('&','')
-					if nuser==nickname:
-						found = True
-						cleaned.append(f"&{newnick}")
-						continue
-				if '%' in cuser:
-					nuser = cuser.replace('%','')
-					if nuser==nickname:
-						found = True
-						cleaned.append(f"%{newnick}")
-						continue
+
+				# if cuser==nickname:
+				# 	found = True
+				# 	cleaned.append(newnick)
+				# 	continue
+				# if '@' in cuser:
+				# 	nuser = cuser.replace('@','')
+				# 	if nuser==nickname:
+				# 		found = True
+				# 		cleaned.append(f"@{newnick}")
+				# 		continue
+				# if '+' in cuser:
+				# 	nuser = cuser.replace('+','')
+				# 	if nuser==nickname:
+				# 		found = True
+				# 		cleaned.append(f"+{newnick}")
+				# 		continue
+				# if '~' in cuser:
+				# 	nuser = cuser.replace('~','')
+				# 	if nuser==nickname:
+				# 		found = True
+				# 		cleaned.append(f"~{newnick}")
+				# 		continue
+				# if '&' in cuser:
+				# 	nuser = cuser.replace('&','')
+				# 	if nuser==nickname:
+				# 		found = True
+				# 		cleaned.append(f"&{newnick}")
+				# 		continue
+				# if '%' in cuser:
+				# 	nuser = cuser.replace('%','')
+				# 	if nuser==nickname:
+				# 		found = True
+				# 		cleaned.append(f"%{newnick}")
+				# 		continue
+
 				cleaned.append(cuser)
 			if found:
 				eobj.users[channel] = cleaned
@@ -333,34 +374,40 @@ def handle_users(eobj,line):
 			cleaned = []
 			found = False
 			for cuser in eobj.users[channel]:
-				if cuser==nickname:
+
+				if cuser.nickname==nickname:
 					found = True
 					continue
-				if '@' in cuser:
-					nuser = cuser.replace('@','')
-					if nuser==nickname:
-						found = True
-						continue
-				if '+' in cuser:
-					nuser = cuser.replace('+','')
-					if nuser==nickname:
-						found = True
-						continue
-				if '~' in cuser:
-					nuser = cuser.replace('~','')
-					if nuser==nickname:
-						found = True
-						continue
-				if '&' in cuser:
-					nuser = cuser.replace('&','')
-					if nuser==nickname:
-						found = True
-						continue
-				if '%' in cuser:
-					nuser = cuser.replace('%','')
-					if nuser==nickname:
-						found = True
-						continue
+
+				# if cuser==nickname:
+				# 	found = True
+				# 	continue
+				# if '@' in cuser:
+				# 	nuser = cuser.replace('@','')
+				# 	if nuser==nickname:
+				# 		found = True
+				# 		continue
+				# if '+' in cuser:
+				# 	nuser = cuser.replace('+','')
+				# 	if nuser==nickname:
+				# 		found = True
+				# 		continue
+				# if '~' in cuser:
+				# 	nuser = cuser.replace('~','')
+				# 	if nuser==nickname:
+				# 		found = True
+				# 		continue
+				# if '&' in cuser:
+				# 	nuser = cuser.replace('&','')
+				# 	if nuser==nickname:
+				# 		found = True
+				# 		continue
+				# if '%' in cuser:
+				# 	nuser = cuser.replace('%','')
+				# 	if nuser==nickname:
+				# 		found = True
+				# 		continue
+
 				cleaned.append(cuser)
 			if found:
 				eobj.users[channel] = cleaned
@@ -401,24 +448,30 @@ def handle_users(eobj,line):
 		irc.call("part",eobj,nickname,host,channel,reason)
 
 		# Remove user from channel user list
+		# cleaned = []
+		# for cuser in eobj.users[channel]:
+		# 	if cuser==nickname: continue
+		# 	if '@' in cuser:
+		# 		nuser = cuser.replace('@','')
+		# 		if nuser==nickname: continue
+		# 	if '+' in cuser:
+		# 		nuser = cuser.replace('+','')
+		# 		if nuser==nickname: continue
+		# 	if '~' in cuser:
+		# 		nuser = cuser.replace('~','')
+		# 		if nuser==nickname: continue
+		# 	if '&' in cuser:
+		# 		nuser = cuser.replace('&','')
+		# 		if nuser==nickname: continue
+		# 	if '%' in cuser:
+		# 		nuser = cuser.replace('%','')
+		# 		if nuser==nickname: continue
+		# 	cleaned.append(cuser)
+		# eobj.users[channel] = cleaned
+
 		cleaned = []
-		for cuser in eobj.users[channel]:
-			if cuser==nickname: continue
-			if '@' in cuser:
-				nuser = cuser.replace('@','')
-				if nuser==nickname: continue
-			if '+' in cuser:
-				nuser = cuser.replace('+','')
-				if nuser==nickname: continue
-			if '~' in cuser:
-				nuser = cuser.replace('~','')
-				if nuser==nickname: continue
-			if '&' in cuser:
-				nuser = cuser.replace('&','')
-				if nuser==nickname: continue
-			if '%' in cuser:
-				nuser = cuser.replace('%','')
-				if nuser==nickname: continue
+		for u in eobj.users[channel]:
+			if u.nickname==nickname: continue
 			cleaned.append(cuser)
 		eobj.users[channel] = cleaned
 
@@ -440,12 +493,20 @@ def handle_users(eobj,line):
 		channel = parsed[0].strip()
 		users = parsed[1].split()
 
+		# Generate user class objects
+		pusers = []
+		for u in users:
+			user = parse_username(u)
+			pusers.append(user)
+
 		if channel in eobj.users:
-			eobj.users[channel] = eobj.users[channel] + users
-			eobj.users[channel] = list(dict.fromkeys(eobj.users[channel]))
+			# eobj.users[channel] = eobj.users[channel] + users
+			# eobj.users[channel] = list(dict.fromkeys(eobj.users[channel]))
+			eobj.users[channel] = eobj.users[channel] + pusers
 			return True
 		else:
-			eobj.users[channel] = users
+			# eobj.users[channel] = users
+			eobj.users[channel] = pusers
 			return True
 
 	# JOIN
@@ -465,8 +526,9 @@ def handle_users(eobj,line):
 			irc.call("join",eobj,nickname,host,channel)
 
 		if channel in eobj.users:
-			eobj.users[channel].append(user)
-			eobj.users[channel] = list(dict.fromkeys(eobj.users[channel]))
+			# eobj.users[channel].append(user)
+			# eobj.users[channel] = list(dict.fromkeys(eobj.users[channel]))
+			eobj.users[channel].append( parse_username(user)  )
 
 		return True
 

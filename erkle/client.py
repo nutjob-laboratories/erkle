@@ -241,8 +241,8 @@ class Erkle:
 		# Raise the "connect" event
 		irc.call("connect",self)
 
-		# Get the server to send nicks/hostmasks
-		self._send("PROTOCTL UHNAMES")
+		# Get the server to send nicks/hostmasks and all status symbols
+		self._send("PROTOCTL UHNAMES NAMESX")
 
 		# Send server password, if necessary
 		if self.password:
