@@ -24,6 +24,15 @@ from erkle.decorator import irc
 from erkle.common import *
 from erkle.data import *
 
+def clean_out_duplicate_users(ulist):
+	nick = []
+	cleaned = []
+	for u in ulist:
+		if u.nickname in nick: continue
+		nick.append(u.nickname)
+		cleaned.append(u)
+
+	return cleaned
 
 def parse_username(user):
 	isop = False
@@ -503,6 +512,7 @@ def handle_users(eobj,line):
 			# eobj.users[channel] = eobj.users[channel] + users
 			# eobj.users[channel] = list(dict.fromkeys(eobj.users[channel]))
 			eobj.users[channel] = eobj.users[channel] + pusers
+			eobj.users[channel] = clean_out_duplicate_users(eobj.users[channel])
 			return True
 		else:
 			# eobj.users[channel] = users
@@ -529,6 +539,7 @@ def handle_users(eobj,line):
 			# eobj.users[channel].append(user)
 			# eobj.users[channel] = list(dict.fromkeys(eobj.users[channel]))
 			eobj.users[channel].append( parse_username(user)  )
+			eobj.users[channel] = clean_out_duplicate_users(eobj.users[channel])
 
 		return True
 
