@@ -26,7 +26,6 @@ import string
 import sys
 import threading
 import os
-import importlib
 
 SSL_AVAILABLE = True
 try:
@@ -48,16 +47,6 @@ class Erkle:
 	#
 	# Initializes an Erkle() object.
 	def __init__(self,serverinfo):
-
-		self.language = "en"
-		if 'language' in serverinfo:
-			self.language = serverinfo['language']
-
-		# Load in localized strings
-		self._load_localization_strings(self.language)
-		# Set "unknown error" string in erkle.errors to the
-		# appropriate localized equivalent
-		self.UNKNOWN_ERROR = UNKNOWN_ERROR
 
 		self.nickname = None
 		if 'nickname' in serverinfo:
@@ -417,24 +406,6 @@ class Erkle:
 			return False
 		else:
 			return True
-
-	# _load_localization_strings()
-	# Arguments: string
-	#
-	# Loads the localized string module for application messages.
-	def _load_localization_strings(self,lang):
-		# https://stackoverflow.com/questions/21221358/python-how-to-import-all-methods-and-attributes-from-a-module-dynamically
-
-		# Load in the language's strings module
-		lang_module = importlib.import_module('erkle.localization.'+lang+'.strings')
-
-		# Import all variables/etc from the strings module
-		module_dict = lang_module.__dict__
-		try:
-			to_import = lang_module.__all__
-		except AttributeError:
-			to_import = [name for name in module_dict if not name.startswith('_')]
-		globals().update({name: module_dict[name] for name in to_import})
 
 	# _check_configuration_input_type()
 	# Arguments: string, variuable, variable type

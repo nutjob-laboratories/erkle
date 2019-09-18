@@ -43,16 +43,6 @@ def evlist(connection,chanlist):
 			print(e[0]+" ("+numusers+")")
 	print("End channel list")
 
-# @irc.event("whois", "erkle.events.dump")
-# def evwhois(connection,nickname,user,host,realname,server,idle,signon,channels,privs):
-# 	print(f"{nickname} {user}@{host} ({realname})")
-# 	print(f"{nickname} is connected to {server}")
-# 	print(f"{nickname} has been {str(idle)} for idle second(s)")
-# 	print(f"{nickname} connected on {signon}")
-# 	if len(channels)>0: print(f"{nickname} is in {','.join(channels)}")
-# 	if privs:
-# 		print(privs)
-
 @irc.event("whois", "erkle.events.dump")
 def evwhois(connection,whois):
 	print(f"{whois.nickname} {whois.username}@{whois.host} ({whois.realname})")

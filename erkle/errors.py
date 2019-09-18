@@ -51,7 +51,7 @@ def raise_error_event(eobj,code,line):
 	if len(parsed)>=2:
 		reason = parsed[1]
 	else:
-		reason = eobj.UNKNOWN_ERROR
+		reason = UNKNOWN_ERROR
 
 	irc.call("error",eobj,code,None,reason)
 
@@ -60,7 +60,7 @@ def handle_errors(eobj,line):
 	tokens = line.split()
 
 	if tokens[1]=="400":
-		irc.call("error",eobj,"400",None,eobj.UNKNOWN_ERROR)
+		irc.call("error",eobj,"400",None,UNKNOWN_ERROR)
 		return True
 
 	if tokens[1]=="401":

@@ -21,4 +21,23 @@
 # SOFTWARE.
 
 APPLICATION_NAME = "Erkle"
-ERKLE_VERSION = "0.040"
+ERKLE_VERSION = "0.041"
+
+DEFAULT_REALNAME = APPLICATION_NAME + " " + ERKLE_VERSION + " IRC Client"
+
+NO_NICKNAME_IN_DICT_ERROR = "Key 'nickname' missing from configuration dict."
+NO_SERVER_IN_DICT_ERROR = "Key 'server' missing from configuration dict."
+NO_SSL_ERROR = "SSL/TLS is not available. Please install pyOpenSSL."
+DISCONNECTED_ERROR = "Disconnected from the server."
+SEND_MESSAGE_ERROR = "Cannot send message: disconnected from the server."
+NOT_STARTED_MESSAGE_ERROR = "Connection not started; can't send message '{}'"
+NOT_THREADED_ERROR = "Connection was not started with spawn()! Exiting..."
+NO_SOCKET_ERROR = "Socket has not been created, connection has not been started."
+NOT_STARTED_ERROR = "Connection not started."
+WRONG_VARIABLE_TYPE = "Wrong variable type for '{key}' (received {rec}, expected {exp})."
+
+CANNOT_ADD_ASTERIX_TAG = "'*' is not a valid tag name."
+CANNOT_REMOVE_ASTERIX_TAG = "Can't remove '*' tag (not a valid tag)."
+
+ERROR_WORD = "Error"
+UNKNOWN_ERROR = "Unknown error"
