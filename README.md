@@ -1,6 +1,6 @@
 <p align="center">
 	<img src="https://github.com/nutjob-laboratories/erkle/raw/master/images/logo_300.png"><br>
-	<a href="https://github.com/nutjob-laboratories/erkle/raw/master/downloads/erkle-irclib.zip"><b>Download Erkle 0.041/b></b></a><br>
+	<a href="https://github.com/nutjob-laboratories/erkle/raw/master/downloads/erkle-irclib.zip"><b>Download Erkle 0.041</b></a><br>
 	<a href="https://github.com/nutjob-laboratories/erkle/blob/master/documentation/Erkle-IRC-Library.pdf"><b>Documentation for Erkle 0.041</b></a><br>
 </p>
 
