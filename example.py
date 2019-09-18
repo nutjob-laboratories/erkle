@@ -68,7 +68,9 @@ uinfo = {
 	'flood-rate': 2,
 	'language': 'en',
 	'clock-frequency': 1.0,
-	'multithreaded': False
+	'multithreaded': False,
+	'show-input': False,
+	'show-output': False
 }
 c = Erkle(uinfo)
 c.connect()

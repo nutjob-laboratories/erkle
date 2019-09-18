@@ -48,6 +48,14 @@ class Erkle:
 	# Initializes an Erkle() object.
 	def __init__(self,serverinfo):
 
+		self.show_input = False
+		if 'show-input' in serverinfo:
+			self.show_input = serverinfo['show-input']
+
+		self.show_output = False
+		if 'show-output' in serverinfo:
+			self.show_output = serverinfo['show-output']
+
 		self.nickname = None
 		if 'nickname' in serverinfo:
 			self.nickname = serverinfo['nickname']
@@ -133,6 +141,8 @@ class Erkle:
 		self._check_configuration_input_type('flood-rate',self.floodrate,int())
 		self._check_configuration_input_type('clock-frequency',self._clock_resolution,float())
 		self._check_configuration_input_type('multithreaded',self._multithreaded,bool())
+		self._check_configuration_input_type('show-input',self.show_input,bool())
+		self._check_configuration_input_type('show-output',self.show_output,bool())
 
 		# Check to make sure that the password (if there is one) is a string
 		if self.password!=None:
@@ -149,7 +159,7 @@ class Erkle:
 				else:
 					intype = 'unknown'
 
-				print(ERROR_WORD+": "+WRONG_VARIABLE_TYPE.format(key='password',rec=intype,exp='string'))
+				print("ERROR: "+WRONG_VARIABLE_TYPE.format(key='password',rec=intype,exp='string'))
 				sys.exit(1)
 
 
@@ -291,6 +301,8 @@ class Erkle:
 
 				# Handle the line
 				self._handle(line)
+
+				if self.show_input: print("<- "+line)
 
 	# _handle()
 	# Arguments: string
@@ -438,7 +450,7 @@ class Erkle:
 			else:
 				reqtype = 'unknown'
 
-			print(ERROR_WORD+": "+WRONG_VARIABLE_TYPE.format(key=cname,rec=intype,exp=reqtype))
+			print("ERROR: "+WRONG_VARIABLE_TYPE.format(key=cname,rec=intype,exp=reqtype))
 			sys.exit(1)
 
 	# _display_error_and_exit()
@@ -446,7 +458,7 @@ class Erkle:
 	#
 	# Displays an error message and exits
 	def _display_error_and_exit(self,msg):
-		print(ERROR_WORD+": "+msg)
+		print("ERROR: "+msg)
 		sys.exit(1)
 
 	# _raise_runtime_error()
@@ -472,6 +484,8 @@ class Erkle:
 	#
 	# Sends a message to the IRC server
 	def _send(self,data):
+
+		if self.show_output: print("-> "+data)
 
 		sender = getattr(self._client, 'write', self._client.send)
 		try:
