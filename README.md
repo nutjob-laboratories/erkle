@@ -53,7 +53,7 @@ configuration = {
 	'nickname':		'erklebot',
 	'username':		'erkle',
 	'realname':		'Erkle Example Bot',
-	'alternate':	'erk1eb0t',
+	'alternate':		'erk1eb0t',
 	'server':		'irc.efnet.org',
 	'encoding':		'UTF-8'
 }
