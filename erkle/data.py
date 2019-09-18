@@ -42,3 +42,48 @@ class Whois:
 		self.signon = 0
 		self.channels = []
 		self.server = ""
+
+def parse_username(user):
+	isop = False
+	isvoiced = False
+	isowner = False
+	isadmin = False
+	ishalfop = False
+
+	parsed = user.split('!')
+	nickname = parsed[0]
+	hostmask = parsed[1]
+	parsed = hostmask.split('@')
+	username = parsed[0]
+	host = parsed[1]
+
+	rawnick = ''
+	for c in nickname:
+		if c=='@':
+			isop = True
+			continue
+		if c=='%':
+			ishalfop = True
+			continue
+		if c=='+':
+			isvoiced = True
+			continue
+		if c=='~':
+			isowner = True
+			continue
+		if c=='&':
+			isadmin = True
+			continue
+		rawnick = rawnick + c
+
+	return User(rawnick,username,host,isop,isvoiced,isowner,isadmin,ishalfop)
+
+def clean_out_duplicate_users(ulist):
+	nick = []
+	cleaned = []
+	for u in ulist:
+		if u.nickname in nick: continue
+		nick.append(u.nickname)
+		cleaned.append(u)
+
+	return cleaned
