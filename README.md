@@ -50,12 +50,12 @@ def cjoin(connection,nickname,host,channel):
 		connection.msg(f"Hello, {nickname}! Welcome to {channel}!")
 
 configuration = {
-	'nickname':		'erklebot',
-	'username':		'erkle',
-	'realname':		'Erkle Example Bot',
-	'alternate':		'erk1eb0t',
-	'server':		'irc.efnet.org',
-	'encoding':		'UTF-8'
+	'nickname':	'erklebot',
+	'username':	'erkle',
+	'realname':	'Erkle Example Bot',
+	'alternate':	'erk1eb0t',
+	'server':	'irc.efnet.org',
+	'encoding':	'UTF-8'
 }
 
 client = Erkle(configuration)
