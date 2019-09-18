@@ -4,9 +4,9 @@
 	<a href="https://github.com/nutjob-laboratories/erkle/blob/master/documentation/Erkle-IRC-Library.pdf"><b>Documentation for Erkle 0.041</b></a><br>
 </p>
 
-**Erkle** is an open source IRC library for Python 3. It is being written as a replacement for Twisted in the [Erk IRC Client](https://github.com/nutjob-laboratories/erk). The current version of **Erkle** is 0.041.
+<!-- **Erkle** is an open source IRC library for Python 3. It is being written as a replacement for Twisted in the [Erk IRC Client](https://github.com/nutjob-laboratories/erk). The current version of **Erkle** is 0.041.
 
-**Erkle** is not feature complete, but it is complete enough for most IRC bots.
+**Erkle** is not feature complete, but it is complete enough for most IRC bots. -->
 
 # Features
 
