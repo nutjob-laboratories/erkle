@@ -10,6 +10,7 @@
 
 # Features
 
+* (Almost) no requirements
 * Open source ([MIT license](https://opensource.org/licenses/MIT))
 * Small (less than 150KB!) and easy to bundle with applications
 * Multiple connection/client support
