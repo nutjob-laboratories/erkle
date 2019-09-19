@@ -61,7 +61,8 @@ def handle_information(eobj,line):
 		else:
 			topic = None
 
-		c = [channel,usercount,topic]
+		#c = [channel,usercount,topic]
+		c = ChannelData(channel,usercount,topic)
 		eobj._channels.append(c)
 		return True
 

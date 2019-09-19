@@ -20,7 +20,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-class User:
+class ChannelData:
+	def __init__(self,name,usercount,topic):
+		self.name = name
+		self.users = usercount
+		self.topic = topic
+
+class UserData:
 	def __init__(self,nickname,username,host,op,voiced,owner,admin,halfop):
 		self.nickname = nickname
 		self.username = username
@@ -31,7 +37,7 @@ class User:
 		self.admin = admin
 		self.halfop = halfop
 
-class Whois:
+class WhoisData:
 	def __init__(self,nickname):
 		self.nickname = nickname
 		self.username = ""
@@ -76,7 +82,7 @@ def parse_username(user):
 			continue
 		rawnick = rawnick + c
 
-	return User(rawnick,username,host,isop,isvoiced,isowner,isadmin,ishalfop)
+	return UserData(rawnick,username,host,isop,isvoiced,isowner,isadmin,ishalfop)
 
 def clean_out_duplicate_users(ulist):
 	nick = []

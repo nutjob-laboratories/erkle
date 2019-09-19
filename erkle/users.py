@@ -63,7 +63,7 @@ def handle_users(eobj,line):
 		realname = ' '.join(tokens)
 		realname = realname [1:]
 
-		eobj._whois[nickname] = Whois(nickname)
+		eobj._whois[nickname] = WhoisData(nickname)
 		eobj._whois[nickname].username = username
 		eobj._whois[nickname].host = host
 		eobj._whois[nickname].realname = realname
