@@ -20,12 +20,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+#--SINGLE_FILE--#
+
 APPLICATION_NAME = "Erkle"
 ERKLE_VERSION = "0.043"
 
 DEFAULT_REALNAME = APPLICATION_NAME + " " + ERKLE_VERSION + " IRC Client"
-
+#--SINGLE_FILE--#
 # Error messages
+#--SINGLE_FILE--#
 
 NO_NICKNAME_IN_DICT_ERROR = "Key 'nickname' missing from configuration dict."
 NO_SERVER_IN_DICT_ERROR = "Key 'server' missing from configuration dict."
@@ -40,3 +43,5 @@ WRONG_VARIABLE_TYPE = "Wrong variable type for '{key}' (received {rec}, expected
 CANNOT_ADD_ASTERIX_TAG = "'*' is not a valid tag name."
 CANNOT_REMOVE_ASTERIX_TAG = "Can't remove '*' tag (not a valid tag)."
 UNKNOWN_ERROR = "Unknown error"
+
+#--SINGLE_FILE--#

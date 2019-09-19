@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+#--SINGLE_FILE--#
+
 class ChannelData:
 	def __init__(self,name,usercount,topic):
 		self.name = name
@@ -93,3 +95,5 @@ def clean_out_duplicate_users(ulist):
 		cleaned.append(u)
 
 	return cleaned
+
+#--SINGLE_FILE--#

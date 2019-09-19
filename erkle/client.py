@@ -40,6 +40,8 @@ from erkle.errors import handle_errors
 from erkle.clock import Uptimer,Clock
 from erkle.common import *
 
+#--SINGLE_FILE--#
+
 class Erkle:
 
 	# __init__()
@@ -791,3 +793,5 @@ class Erkle:
 	# Sets (or unsets) a mode on a channel or person
 	def mode(self,target,mode):
 		self.send("MODE "+target+" "+mode)
+
+#--SINGLE_FILE--#

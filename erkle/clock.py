@@ -22,6 +22,8 @@
 
 import threading
 
+#--SINGLE_FILE--#
+
 class Uptimer(threading.Thread):
 	def __init__(self, event, eobj):
 		threading.Thread.__init__(self)
@@ -43,3 +45,5 @@ class Clock(threading.Thread):
 	def run(self):
 		while not self.stopped.wait(self.erkle._clock_resolution):
 			self.erkle._regular_clock_tick()
+
+#--SINGLE_FILE--#

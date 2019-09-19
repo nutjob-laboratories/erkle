@@ -23,6 +23,8 @@
 from erkle.decorator import irc
 from erkle.common import *
 
+#--SINGLE_FILE--#
+
 def raise_error_double_target_event(eobj,code,tokens):
 	tokens.pop(0)	# remove server
 	tokens.pop(0)	# reove message type
@@ -248,3 +250,5 @@ def handle_errors(eobj,line):
 		return True
 
 	return False
+
+#--SINGLE_FILE--#

@@ -22,6 +22,8 @@
 
 from erkle.common import *
 
+#--SINGLE_FILE--#
+
 class Event:
 	def __init__(self,func,tags):
 		self.function = func
@@ -72,4 +74,4 @@ class EventHandler:
 
 irc = EventHandler()
 
-
+#--SINGLE_FILE--#

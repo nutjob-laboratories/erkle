@@ -23,6 +23,8 @@
 from erkle.decorator import irc
 from erkle.common import *
 
+#--SINGLE_FILE--#
+
 def handle_information(eobj,line):
 
 	tokens = line.split()
@@ -268,3 +270,5 @@ def handle_information(eobj,line):
 			eobj.options.append(ent)
 		return True
 	return False
+
+#--SINGLE_FILE--#

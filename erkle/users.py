@@ -24,6 +24,8 @@ from erkle.decorator import irc
 from erkle.common import *
 from erkle.data import *
 
+#--SINGLE_FILE--#
+
 def handle_users(eobj,line):
 
 	tokens = line.split()
@@ -400,3 +402,5 @@ def handle_users(eobj,line):
 		return True
 
 	return False
+
+#--SINGLE_FILE--#
