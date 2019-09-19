@@ -1,3 +1,16 @@
+#             _    _      
+#            | |  | |     
+#    ___ _ __| | _| | ___ 
+#   / _ \ '__| |/ / |/ _ \
+#  |  __/ |  |   <| |  __/
+#   \___|_|  |_|\_\_|\___|
+#
+# Erkle IRC Library
+# Version 0.044
+#
+# https://github.com/nutjob-laboratories/erkle
+
+
 # MIT License
 
 # Copyright (c) 2019 Dan Hetrick
@@ -34,7 +47,6 @@ except ImportError:
 	SSL_AVAILABLE = False
 
 __all__ = ['irc','Erkle','ERKLE_VERSION']
-
 
 APPLICATION_NAME = "Erkle"
 ERKLE_VERSION = "0.044"
