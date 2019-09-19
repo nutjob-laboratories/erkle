@@ -1,3 +1,4 @@
+
 # MIT License
 
 # Copyright (c) 2019 Dan Hetrick
@@ -21,7 +22,6 @@
 # SOFTWARE.
 
 #--SINGLE_FILE--#
-
 APPLICATION_NAME = "Erkle"
 ERKLE_VERSION = "0.044"
 
