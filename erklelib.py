@@ -6,7 +6,7 @@
 #   \___|_|  |_|\_\_|\___|
 #
 # Erkle IRC Library
-# Version 0.044
+# Version 0.0441
 #
 # https://github.com/nutjob-laboratories/erkle
 
@@ -49,7 +49,7 @@ except ImportError:
 __all__ = ['irc','Erkle','ERKLE_VERSION']
 
 APPLICATION_NAME = "Erkle"
-ERKLE_VERSION = "0.044"
+ERKLE_VERSION = "0.0441"
 
 DEFAULT_REALNAME = APPLICATION_NAME + " " + ERKLE_VERSION + " IRC Client"
 
@@ -198,13 +198,17 @@ class Erkle:
 		else:
 			self._multithreaded = False
 
-		self.show_input = False
+		self._show_input = False
 		if 'show-input' in serverinfo:
-			self.show_input = serverinfo['show-input']
+			self._show_input = serverinfo['show-input']
 
-		self.show_output = False
+		self._show_output = False
 		if 'show-output' in serverinfo:
-			self.show_output = serverinfo['show-output']
+			self._show_output = serverinfo['show-output']
+
+		self._daemon = False
+		if 'daemon' in serverinfo:
+			self._daemon = serverinfo['daemon']
 
 		# Check to make sure all config input is the right variable type
 		self._check_configuration_input_type('nickname',self.nickname,str())
@@ -219,8 +223,9 @@ class Erkle:
 		self._check_configuration_input_type('flood-rate',self.floodrate,int())
 		self._check_configuration_input_type('clock-frequency',self._clock_resolution,float())
 		self._check_configuration_input_type('multithreaded',self._multithreaded,bool())
-		self._check_configuration_input_type('show-input',self.show_input,bool())
-		self._check_configuration_input_type('show-output',self.show_output,bool())
+		self._check_configuration_input_type('show-input',self._show_input,bool())
+		self._check_configuration_input_type('show-output',self._show_output,bool())
+		self._check_configuration_input_type('daemon',self._daemon,bool())
 
 		# Check to make sure that the password (if there is one) is a string
 		if self.password!=None:
@@ -379,7 +384,7 @@ class Erkle:
 				# Handle the line
 				self._handle(line)
 
-				if self.show_input: print("<- "+line)
+				if self._show_input: print("<- "+line)
 
 	# _handle()
 	# Arguments: string
@@ -562,7 +567,7 @@ class Erkle:
 	# Sends a message to the IRC server
 	def _send(self,data):
 
-		if self.show_output: print("-> "+data)
+		if self._show_output: print("-> "+data)
 
 		sender = getattr(self._client, 'write', self._client.send)
 		try:
@@ -624,6 +629,7 @@ class Erkle:
 	def connect(self):
 		if self._multithreaded:
 			t = threading.Thread(name=f"{self.server}:{str(self.port)}",target=self._run)
+			if self._daemon: t.daemon = True
 			self._thread = t
 			t.start()
 		else:
