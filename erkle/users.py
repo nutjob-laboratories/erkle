@@ -28,6 +28,11 @@ def handle_users(eobj,line):
 
 	tokens = line.split()
 
+	# OPER
+	if tokens[1]=="381":
+		irc.call("oper",eobj)
+		return True
+
 	# ENDOFWHOIS
 	if tokens[1]=="318":
 		tokens.pop(0)	# remove server

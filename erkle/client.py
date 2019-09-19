@@ -48,14 +48,6 @@ class Erkle:
 	# Initializes an Erkle() object.
 	def __init__(self,serverinfo):
 
-		self.show_input = False
-		if 'show-input' in serverinfo:
-			self.show_input = serverinfo['show-input']
-
-		self.show_output = False
-		if 'show-output' in serverinfo:
-			self.show_output = serverinfo['show-output']
-
 		self.nickname = None
 		if 'nickname' in serverinfo:
 			self.nickname = serverinfo['nickname']
@@ -64,7 +56,10 @@ class Erkle:
 		if self.nickname == None:
 			self._display_error_and_exit(NO_NICKNAME_IN_DICT_ERROR)
 
-		self._check_configuration_input_type('nickname',self.nickname,str())
+		if 'server' in serverinfo:
+			self.server = serverinfo['server']
+		else:
+			self._display_error_and_exit(NO_SERVER_IN_DICT_ERROR)
 
 		self.username = self.nickname
 		if 'username' in serverinfo:
@@ -83,11 +78,6 @@ class Erkle:
 			self.alternate = serverinfo['alternate']
 		if 'alt' in serverinfo:
 			self.alternate = serverinfo['alt']
-
-		if 'server' in serverinfo:
-			self.server = serverinfo['server']
-		else:
-			self._display_error_and_exit(NO_SERVER_IN_DICT_ERROR)
 
 		if 'port' in serverinfo:
 			self.port = serverinfo['port']
@@ -129,7 +119,16 @@ class Erkle:
 		else:
 			self._multithreaded = False
 
+		self.show_input = False
+		if 'show-input' in serverinfo:
+			self.show_input = serverinfo['show-input']
+
+		self.show_output = False
+		if 'show-output' in serverinfo:
+			self.show_output = serverinfo['show-output']
+
 		# Check to make sure all config input is the right variable type
+		self._check_configuration_input_type('nickname',self.nickname,str())
 		self._check_configuration_input_type('username',self.username,str())
 		self._check_configuration_input_type('realname',self.realname,str())
 		self._check_configuration_input_type('alternate',self.alternate,str())
@@ -161,7 +160,6 @@ class Erkle:
 
 				print("ERROR: "+WRONG_VARIABLE_TYPE.format(key='password',rec=intype,exp='string'))
 				sys.exit(1)
-
 
 		# If SSL isn't available, and SSL is set to
 		# be used, raise an error
@@ -606,6 +604,13 @@ class Erkle:
 				self._message_queue.append(data)
 		else:
 			self._send(data)
+
+	# oper()
+	# Arguments: string, string
+	#
+	# Sends a OPER command to the IRC server
+	def oper(self,username,password):
+		self.send("OPER "+username+" "+password)
 
 	# join()
 	# Arguments: string, string
