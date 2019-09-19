@@ -13,7 +13,8 @@
 
 * (Almost) no requirements
 * Open source ([MIT license](https://opensource.org/licenses/MIT))
-* Small (less than 150KB!) and easy to bundle with applications
+* Small (less than 150KB, or less than 50KB for the single file version!)
+* Easy to bundle with applications
 * Multiple connection/client support
 * SSL/TLS connection support
 * Flood protection
