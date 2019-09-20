@@ -1,11 +1,11 @@
 <p align="center">
 	<img src="https://github.com/nutjob-laboratories/erkle/raw/master/images/logo_300.png"><br>
-	<a href="https://github.com/nutjob-laboratories/erkle/raw/master/downloads/erkle-irclib.zip"><b>Download Erkle 0.0441</b></a><br>
-	<a href="https://github.com/nutjob-laboratories/erkle/raw/master/erklelib.py"><b>Download single file Erkle 0.0441</b></a><br>
-	<a href="https://github.com/nutjob-laboratories/erkle/blob/master/documentation/Erkle-IRC-Library.pdf"><b>Documentation for Erkle 0.0441</b></a><br>
+	<a href="https://github.com/nutjob-laboratories/erkle/raw/master/downloads/erkle-irclib.zip"><b>Download Erkle 0.0442</b></a><br>
+	<a href="https://github.com/nutjob-laboratories/erkle/raw/master/erklelib.py"><b>Download single file Erkle 0.0442</b></a><br>
+	<a href="https://github.com/nutjob-laboratories/erkle/blob/master/documentation/Erkle-IRC-Library.pdf"><b>Documentation for Erkle 0.0442</b></a><br>
 </p>
 
-**Erkle** is an open source IRC library for Python 3. It is being written as a replacement for Twisted in the [Erk IRC Client](https://github.com/nutjob-laboratories/erk). The current version of **Erkle** is 0.0441.
+**Erkle** is an open source IRC library for Python 3. It is being written as a replacement for Twisted in the [Erk IRC Client](https://github.com/nutjob-laboratories/erk). The current version of **Erkle** is 0.0442.
 
 **Erkle** is not feature complete, but it is complete enough for most IRC bots.
 

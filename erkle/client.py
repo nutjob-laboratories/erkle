@@ -133,6 +133,16 @@ class Erkle:
 		if 'daemon' in serverinfo:
 			self._daemon = serverinfo['daemon']
 
+		if 'socket' in serverinfo:
+			if serverinfo['socket'] != None:
+				global socket
+				socket = serverinfo['socket']
+		# else:
+		# 	import socket
+
+		# Create the socket
+		self._client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+
 		# Check to make sure all config input is the right variable type
 		self._check_configuration_input_type('nickname',self.nickname,str())
 		self._check_configuration_input_type('username',self.username,str())
@@ -235,7 +245,7 @@ class Erkle:
 		irc.call("connecting",self)
 
 		# Create the connection socket and connect to the server
-		self._client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+		# self._client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 		self._client.connect((self.server,self.port))
 
 		## SSL-ify the connection if needed
@@ -583,14 +593,11 @@ class Erkle:
 			self._raise_runtime_error(NOT_THREADED_ERROR)
 
 	# socket()
-	# Arguments: none
+	# Arguments: none *or* socket-a-like object
 	#
 	# Returns the object's socket
-	def socket(self):
-		if self._not_started():
-			self._raise_runtime_error(NO_SOCKET_ERROR)
-		else:
-			return self._client
+	def socket(self,sobj=None):
+		return self._client
 
 	# send()
 	# Arguments: string

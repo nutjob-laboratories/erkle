@@ -6,7 +6,7 @@
 #   \___|_|  |_|\_\_|\___|
 #
 # Erkle IRC Library
-# Version 0.0441
+# Version 0.0442
 #
 # https://github.com/nutjob-laboratories/erkle
 
@@ -49,7 +49,7 @@ except ImportError:
 __all__ = ['irc','Erkle','ERKLE_VERSION']
 
 APPLICATION_NAME = "Erkle"
-ERKLE_VERSION = "0.0441"
+ERKLE_VERSION = "0.0442"
 
 DEFAULT_REALNAME = APPLICATION_NAME + " " + ERKLE_VERSION + " IRC Client"
 
@@ -60,7 +60,6 @@ DISCONNECTED_ERROR = "Disconnected from the server."
 SEND_MESSAGE_ERROR = "Cannot send message: disconnected from the server."
 NOT_STARTED_MESSAGE_ERROR = "Connection not started; can't send message '{}'"
 NOT_THREADED_ERROR = "Connection was not started with spawn()! Exiting..."
-NO_SOCKET_ERROR = "Socket has not been created, connection has not been started."
 NOT_STARTED_ERROR = "Connection not started."
 WRONG_VARIABLE_TYPE = "Wrong variable type for '{key}' (received {rec}, expected {exp})."
 CANNOT_ADD_ASTERIX_TAG = "'*' is not a valid tag name."
@@ -210,6 +209,16 @@ class Erkle:
 		if 'daemon' in serverinfo:
 			self._daemon = serverinfo['daemon']
 
+		if 'socket' in serverinfo:
+			if serverinfo['socket'] != None:
+				global socket
+				socket = serverinfo['socket']
+		# else:
+		# 	import socket
+
+		# Create the socket
+		self._client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+
 		# Check to make sure all config input is the right variable type
 		self._check_configuration_input_type('nickname',self.nickname,str())
 		self._check_configuration_input_type('username',self.username,str())
@@ -312,7 +321,7 @@ class Erkle:
 		irc.call("connecting",self)
 
 		# Create the connection socket and connect to the server
-		self._client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+		# self._client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 		self._client.connect((self.server,self.port))
 
 		## SSL-ify the connection if needed
@@ -660,14 +669,11 @@ class Erkle:
 			self._raise_runtime_error(NOT_THREADED_ERROR)
 
 	# socket()
-	# Arguments: none
+	# Arguments: none *or* socket-a-like object
 	#
 	# Returns the object's socket
-	def socket(self):
-		if self._not_started():
-			self._raise_runtime_error(NO_SOCKET_ERROR)
-		else:
-			return self._client
+	def socket(self,sobj=None):
+		return self._client
 
 	# send()
 	# Arguments: string

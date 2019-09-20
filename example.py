@@ -70,7 +70,8 @@ uinfo = {
 	'clock-frequency': 1.0,
 	'multithreaded': False,
 	'show-input': False,
-	'show-output': False
+	'show-output': False,
+	'socket': None
 }
 c = Erkle(uinfo)
 c.connect()
