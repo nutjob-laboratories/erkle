@@ -54,24 +54,8 @@ def fevent(connection):
 	print("Registered!")
 	connection.join("#erklelib")
 
-uinfo = {
-	'nickname': 'erklebot',
-	'username': 'erklebot',
-	'realname' : 'Erkle IRC bot',
-	'alternate': 'erk1eb0t',
-	'server':'localhost',
-	'port':6667,
-	'ssl': False,
-	'password': None,
-	'encoding': 'utf-8',
-	'flood-protection': True,
-	'flood-rate': 2,
-	'language': 'en',
-	'clock-frequency': 1.0,
-	'multithreaded': False,
-	'show-input': False,
-	'show-output': False,
-	'socket': None
-}
-c = Erkle(uinfo)
+c = Erkle("erklebot","localhost",port=6667,username="erklebot",realname='erkle bot',alternate='erk1eb0t',
+			password=None,ssl=False,encoding='utf-8',flood_protection=True,flood_rate=2,clock_frequency=1.0,
+			multithread=False,debug_input=False,debug_output=False,daemon=False,socket=None)
+
 c.connect()

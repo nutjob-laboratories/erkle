@@ -6,7 +6,7 @@
 #   \___|_|  |_|\_\_|\___|
 #
 # Erkle IRC Library
-# Version 0.0442
+# Version 0.050
 #
 # https://github.com/nutjob-laboratories/erkle
 
@@ -49,7 +49,7 @@ except ImportError:
 __all__ = ['irc','Erkle','ERKLE_VERSION']
 
 APPLICATION_NAME = "Erkle"
-ERKLE_VERSION = "0.0442"
+ERKLE_VERSION = "0.050"
 
 DEFAULT_REALNAME = APPLICATION_NAME + " " + ERKLE_VERSION + " IRC Client"
 
@@ -124,97 +124,78 @@ class Erkle:
 	# Arguments: dict
 	#
 	# Initializes an Erkle() object.
-	def __init__(self,serverinfo):
+	# def __init__(self,serverinfo):
+	def __init__(self,nickname,server,**kwargs):
 
-		self.nickname = None
-		if 'nickname' in serverinfo:
-			self.nickname = serverinfo['nickname']
-		if 'nick' in serverinfo:
-			self.nickname = serverinfo['nick']
-		if self.nickname == None:
-			self._display_error_and_exit(NO_NICKNAME_IN_DICT_ERROR)
+		self.nickname = nickname
+		self.server = server
 
-		if 'server' in serverinfo:
-			self.server = serverinfo['server']
-		else:
-			self._display_error_and_exit(NO_SERVER_IN_DICT_ERROR)
-
-		self.username = self.nickname
-		if 'username' in serverinfo:
-			self.username = serverinfo['username']
-		if 'user' in serverinfo:
-			self.username = serverinfo['user']
-
+		self.port = 6667
+		self.username = None
+		self.alternate = None
+		self.password = None
+		self.usessl = False
 		self.realname = DEFAULT_REALNAME
-		if 'realname' in serverinfo:
-			self.realname = serverinfo['realname']
-		if 'real' in serverinfo:
-			self.realname = serverinfo['real']
-
-		self.alternate = self.nickname + "_"
-		if 'alternate' in serverinfo:
-			self.alternate = serverinfo['alternate']
-		if 'alt' in serverinfo:
-			self.alternate = serverinfo['alt']
-
-		if 'port' in serverinfo:
-			self.port = serverinfo['port']
-		else:
-			self.port = 6667
-
-		if 'password' in serverinfo:
-			self.password = serverinfo['password']
-		else:
-			self.password = None
-
-		if 'ssl' in serverinfo:
-			self.usessl = serverinfo['ssl']
-		else:
-			self.usessl = False
-
-		if 'encoding' in serverinfo:
-			self.encoding = serverinfo['encoding']
-		else:
-			self.encoding = "utf-8"
-
-		if 'flood-protection' in serverinfo:
-			self.flood_protection = serverinfo['flood-protection']
-		else:
-			self.flood_protection = True
-
-		if 'flood-rate' in serverinfo:
-			self.floodrate = serverinfo['flood-rate']
-		else:
-			self.floodrate = 2
-
-		if 'clock-frequency' in serverinfo:
-			self._clock_resolution = serverinfo['clock-frequency']
-		else:
-			self._clock_resolution = 1.0
-
-		if 'multithreaded' in serverinfo:
-			self._multithreaded = serverinfo['multithreaded']
-		else:
-			self._multithreaded = False
-
+		self.encoding = "utf-8"
+		self.flood_protection = True
+		self.floodrate = 2
+		self._clock_resolution = 1.0
+		self._multithreaded = False
 		self._show_input = False
-		if 'show-input' in serverinfo:
-			self._show_input = serverinfo['show-input']
-
 		self._show_output = False
-		if 'show-output' in serverinfo:
-			self._show_output = serverinfo['show-output']
-
 		self._daemon = False
-		if 'daemon' in serverinfo:
-			self._daemon = serverinfo['daemon']
 
-		if 'socket' in serverinfo:
-			if serverinfo['socket'] != None:
-				global socket
-				socket = serverinfo['socket']
-		# else:
-		# 	import socket
+		for key, value in kwargs.items():
+
+			if key=="socket":
+				if value!=None:
+					global socket
+					socket = value
+
+			if key=='daemon':
+				self._daemon = value
+
+			if key=='debug_output':
+				self._show_output = value
+
+			if key=='debug_input':
+				self._show_input = value
+
+			if key=='multithread':
+				self._multithreaded = value
+
+			if key=='clock_frequency':
+				self._clock_resolution = value
+
+			if key=='flood_protection':
+				self.flood_protection = value
+
+			if key=='flood_rate':
+				self.floodrate = value
+
+			if key=='username':
+				self.username = value
+
+			if key=='realname':
+				self.realname = value
+
+			if key=='alternate':
+				self.alternate = value
+
+			if key=='port':
+				self.port = value
+
+			if key=='password':
+				self.password = value
+
+			if key=='ssl':
+				self.usessl = value
+
+			if key=='encoding':
+				self.encoding = value
+
+		if self.alternate==None: self.alternate = self.nickname + "_"
+		if self.username==None: self.username = self.nickname
 
 		# Create the socket
 		self._client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -228,13 +209,24 @@ class Erkle:
 		self._check_configuration_input_type('port',self.port,int())
 		self._check_configuration_input_type('ssl',self.usessl,bool())
 		self._check_configuration_input_type('encoding',self.encoding,str())
-		self._check_configuration_input_type('flood-protection',self.flood_protection,bool())
-		self._check_configuration_input_type('flood-rate',self.floodrate,int())
-		self._check_configuration_input_type('clock-frequency',self._clock_resolution,float())
+		self._check_configuration_input_type('flood_protection',self.flood_protection,bool())
 		self._check_configuration_input_type('multithreaded',self._multithreaded,bool())
-		self._check_configuration_input_type('show-input',self._show_input,bool())
-		self._check_configuration_input_type('show-output',self._show_output,bool())
+		self._check_configuration_input_type('debug_input',self._show_input,bool())
+		self._check_configuration_input_type('debug_output',self._show_output,bool())
 		self._check_configuration_input_type('daemon',self._daemon,bool())
+
+		# Make sure flood_rate is an int or a float
+		if type(self.floodrate)!=type(int()):
+			if type(self.floodrate)!=type(float()):
+				print("ERROR: "+WRONG_VARIABLE_TYPE.format(key='flood_rate',rec=intype,exp='int'))
+				sys.exit(1)
+
+		# Make sure clock_frequency is a in for a float
+		if type(self._clock_resolution)!=type(int()):
+			if type(self._clock_resolution)!=type(float()):
+				print("ERROR: "+WRONG_VARIABLE_TYPE.format(key='clock_frequency',rec=intype,exp='float'))
+				sys.exit(1)
+
 
 		# Check to make sure that the password (if there is one) is a string
 		if self.password!=None:
