@@ -68,6 +68,10 @@ client.connect()
 # Another IRC library? Why not use Twisted/irclib/...?
 I wanted an IRC library with as few requirements as possible, and didn't require subclassing. I also wanted a client that was small enough to be bundled with an application, rather than requiring a user to install it through [`pip`](https://pypi.org/project/pip/) or some other package manager. Last, I wanted a library that wasn't focused on writing IRC bots or writing IRC clients; I wanted a library that would work for work for any IRC-related activity.  Since I couldn't find this library, I decided to write Erkle.
 
+# Single file version
+
+The entire library has been "compressed" into a single Python file, [erklelib.py](https://github.com/nutjob-laboratories/erkle/raw/master/erklelib.py), that you can bundle with your applications. The code has not been "minimized", compressed, or otherwise changed, just compiled into a single file. Using it is just as easy as using **Erkle**; just change the import line to `from erklelib import *`.
+
 # Documentation
 **Erkle**'s documentation is available [here](https://github.com/nutjob-laboratories/erkle/blob/master/documentation/Erkle-IRC-Library.pdf).
 
