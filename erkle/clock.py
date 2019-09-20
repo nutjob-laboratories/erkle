@@ -32,7 +32,7 @@ class Uptimer(threading.Thread):
 
 	# Execute the Erkle object's _uptime_clock_tick() method
 	def run(self):
-		while not self.stopped.wait(1):
+		while not self.stopped.wait(self.erkle._uptime_resolution):
 			self.erkle._uptime_clock_tick()
 
 class Clock(threading.Thread):

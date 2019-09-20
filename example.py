@@ -55,7 +55,7 @@ def fevent(connection):
 	connection.join("#erklelib")
 
 c = Erkle("erklebot","localhost",port=6667,username="erklebot",realname='erkle bot',alternate='erk1eb0t',
-			password=None,ssl=False,encoding='utf-8',flood_protection=True,flood_rate=2,clock_frequency=1.0,
-			multithread=False,debug_input=False,debug_output=False,daemon=False,socket=None)
+			password=None,ssl=False,encoding='utf-8',flood_protection=True,flood_rate=2,clock_resolution=0.25,
+			tick_frequency=1.0,multithread=False,debug_input=False,debug_output=False,daemon=False,socket=None)
 
 c.connect()

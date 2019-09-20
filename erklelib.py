@@ -6,7 +6,7 @@
 #   \___|_|  |_|\_\_|\___|
 #
 # Erkle IRC Library
-# Version 0.050
+# Version 0.0511
 #
 # https://github.com/nutjob-laboratories/erkle
 
@@ -49,21 +49,19 @@ except ImportError:
 __all__ = ['irc','Erkle','ERKLE_VERSION']
 
 APPLICATION_NAME = "Erkle"
-ERKLE_VERSION = "0.050"
+ERKLE_VERSION = "0.0511"
 
 DEFAULT_REALNAME = APPLICATION_NAME + " " + ERKLE_VERSION + " IRC Client"
 
-NO_NICKNAME_IN_DICT_ERROR = "Key 'nickname' missing from configuration dict."
-NO_SERVER_IN_DICT_ERROR = "Key 'server' missing from configuration dict."
 NO_SSL_ERROR = "SSL/TLS is not available. Please install pyOpenSSL."
 DISCONNECTED_ERROR = "Disconnected from the server."
 SEND_MESSAGE_ERROR = "Cannot send message: disconnected from the server."
 NOT_STARTED_MESSAGE_ERROR = "Connection not started; can't send message '{}'"
-NOT_THREADED_ERROR = "Connection was not started with spawn()! Exiting..."
+NOT_THREADED_ERROR = "Connection is not running in multithread mode! Exiting..."
 NOT_STARTED_ERROR = "Connection not started."
 WRONG_VARIABLE_TYPE = "Wrong variable type for '{key}' (received {rec}, expected {exp})."
 CANNOT_ADD_ASTERIX_TAG = "'*' is not a valid tag name."
-CANNOT_REMOVE_ASTERIX_TAG = "Can't remove '*' tag (not a valid tag)."
+CANNOT_REMOVE_ASTERIX_TAG = "Can't remove '*' tag (not a valid tag name)."
 UNKNOWN_ERROR = "Unknown error"
 
 
@@ -144,6 +142,7 @@ class Erkle:
 		self._show_input = False
 		self._show_output = False
 		self._daemon = False
+		self._uptime_resolution = 0.25
 
 		for key, value in kwargs.items():
 
@@ -164,8 +163,11 @@ class Erkle:
 			if key=='multithread':
 				self._multithreaded = value
 
-			if key=='clock_frequency':
+			if key=='tick_frequency':
 				self._clock_resolution = value
+
+			if key=='clock_resolution':
+				self._uptime_resolution = value
 
 			if key=='flood_protection':
 				self.flood_protection = value
@@ -218,15 +220,20 @@ class Erkle:
 		# Make sure flood_rate is an int or a float
 		if type(self.floodrate)!=type(int()):
 			if type(self.floodrate)!=type(float()):
-				print("ERROR: "+WRONG_VARIABLE_TYPE.format(key='flood_rate',rec=intype,exp='int'))
+				print("ERROR: "+WRONG_VARIABLE_TYPE.format(key='flood_rate',rec=intype,exp='float'))
 				sys.exit(1)
 
-		# Make sure clock_frequency is a in for a float
+		# Make sure clock_frequency is an int for a float
 		if type(self._clock_resolution)!=type(int()):
 			if type(self._clock_resolution)!=type(float()):
-				print("ERROR: "+WRONG_VARIABLE_TYPE.format(key='clock_frequency',rec=intype,exp='float'))
+				print("ERROR: "+WRONG_VARIABLE_TYPE.format(key='tick_frequency',rec=intype,exp='float'))
 				sys.exit(1)
 
+		# Make sure uptime_resolution is an int for a float
+		if type(self._uptime_resolution)!=type(int()):
+			if type(self._uptime_resolution)!=type(float()):
+				print("ERROR: "+WRONG_VARIABLE_TYPE.format(key='clock_resolution',rec=intype,exp='float'))
+				sys.exit(1)
 
 		# Check to make sure that the password (if there is one) is a string
 		if self.password!=None:
@@ -484,11 +491,16 @@ class Erkle:
 	# Increments the uptime by one second, and calls
 	# _sendqueue() to send queued messages.
 	def _uptime_clock_tick(self):
-		# self.uptime = self.uptime + 1
-		self.uptime = self.uptime + 1
+		self.uptime = self.uptime + self._uptime_resolution
+		#self.uptime = self.uptime + 1
 
 		if self.flood_protection:
-			if (self.uptime % self.floodrate)==0:
+			# if (self.uptime % self.floodrate)==0:
+			# 	self._sendqueue()
+
+			if self._last_message_time==0:
+				self._sendqueue()
+			elif (self._last_message_time + self.floodrate)<=self.uptime:
 				self._sendqueue()
 
 	# _not_started()
@@ -884,7 +896,7 @@ class Uptimer(threading.Thread):
 
 	# Execute the Erkle object's _uptime_clock_tick() method
 	def run(self):
-		while not self.stopped.wait(1):
+		while not self.stopped.wait(self.erkle._uptime_resolution):
 			self.erkle._uptime_clock_tick()
 
 class Clock(threading.Thread):

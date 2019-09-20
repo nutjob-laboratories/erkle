@@ -68,6 +68,7 @@ class Erkle:
 		self._show_input = False
 		self._show_output = False
 		self._daemon = False
+		self._uptime_resolution = 0.25
 
 		for key, value in kwargs.items():
 
@@ -88,8 +89,11 @@ class Erkle:
 			if key=='multithread':
 				self._multithreaded = value
 
-			if key=='clock_frequency':
+			if key=='tick_frequency':
 				self._clock_resolution = value
+
+			if key=='clock_resolution':
+				self._uptime_resolution = value
 
 			if key=='flood_protection':
 				self.flood_protection = value
@@ -142,15 +146,20 @@ class Erkle:
 		# Make sure flood_rate is an int or a float
 		if type(self.floodrate)!=type(int()):
 			if type(self.floodrate)!=type(float()):
-				print("ERROR: "+WRONG_VARIABLE_TYPE.format(key='flood_rate',rec=intype,exp='int'))
+				print("ERROR: "+WRONG_VARIABLE_TYPE.format(key='flood_rate',rec=intype,exp='float'))
 				sys.exit(1)
 
-		# Make sure clock_frequency is a in for a float
+		# Make sure clock_frequency is an int for a float
 		if type(self._clock_resolution)!=type(int()):
 			if type(self._clock_resolution)!=type(float()):
-				print("ERROR: "+WRONG_VARIABLE_TYPE.format(key='clock_frequency',rec=intype,exp='float'))
+				print("ERROR: "+WRONG_VARIABLE_TYPE.format(key='tick_frequency',rec=intype,exp='float'))
 				sys.exit(1)
 
+		# Make sure uptime_resolution is an int for a float
+		if type(self._uptime_resolution)!=type(int()):
+			if type(self._uptime_resolution)!=type(float()):
+				print("ERROR: "+WRONG_VARIABLE_TYPE.format(key='clock_resolution',rec=intype,exp='float'))
+				sys.exit(1)
 
 		# Check to make sure that the password (if there is one) is a string
 		if self.password!=None:
@@ -408,11 +417,16 @@ class Erkle:
 	# Increments the uptime by one second, and calls
 	# _sendqueue() to send queued messages.
 	def _uptime_clock_tick(self):
-		# self.uptime = self.uptime + 1
-		self.uptime = self.uptime + 1
+		self.uptime = self.uptime + self._uptime_resolution
+		#self.uptime = self.uptime + 1
 
 		if self.flood_protection:
-			if (self.uptime % self.floodrate)==0:
+			# if (self.uptime % self.floodrate)==0:
+			# 	self._sendqueue()
+
+			if self._last_message_time==0:
+				self._sendqueue()
+			elif (self._last_message_time + self.floodrate)<=self.uptime:
 				self._sendqueue()
 
 	# _not_started()
