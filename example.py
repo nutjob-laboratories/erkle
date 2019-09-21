@@ -52,10 +52,12 @@ def fevent(connection,nickname,host,message):
 @irc.event("registered")
 def fevent(connection):
 	print("Registered!")
-	connection.join("#erklelib")
+	# connection.join("#erklelib")
+	connection.join("#flarpstock")
 
 c = Erkle("erklebot","localhost",port=6667,username="erklebot",realname='erkle bot',alternate='erk1eb0t',
-			password=None,ssl=False,encoding='utf-8',flood_protection=True,flood_rate=2,clock_resolution=0.25,
-			tick_frequency=1.0,multithread=False,debug_input=False,debug_output=False,daemon=False,socket=None)
+			password=None,ssl=False,certificate=None, key=None, verify_host=False, verify_cert=False,
+			encoding='utf-8',flood_protection=True,flood_rate=2,clock_resolution=0.25,tick_frequency=1.0,
+			multithreaded=False,debug_input=False,debug_output=False,daemon=False,socket=None)
 
 c.connect()

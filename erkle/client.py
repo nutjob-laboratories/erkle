@@ -45,32 +45,107 @@ from erkle.common import *
 class Erkle:
 
 	# __init__()
-	# Arguments: dict
+	# Arguments: string, string, [key words,...]
 	#
 	# Initializes an Erkle() object.
-	# def __init__(self,serverinfo):
 	def __init__(self,nickname,server,**kwargs):
 
 		self.nickname = nickname
 		self.server = server
 
-		self.port = 6667
-		self.username = None
-		self.alternate = None
-		self.password = None
-		self.usessl = False
-		self.realname = DEFAULT_REALNAME
-		self.encoding = "utf-8"
-		self.flood_protection = True
-		self.floodrate = 2
-		self._clock_resolution = 1.0
-		self._multithreaded = False
-		self._show_input = False
-		self._show_output = False
-		self._daemon = False
-		self._uptime_resolution = 0.25
+		self._started = False				# Stores if the IRC connection has been started or not
+
+		self.port = 6667					# The server's port
+		self.username = None				# User's username
+		self.alternate = None				# User's alternate nick
+		self.password = None				# The server's password
+		self.usessl = False					# Whether to use SSL or not
+		self.realname = DEFAULT_REALNAME	# User's realname
+		self.encoding = "utf-8"				# String encoding to use
+		self.flood_protection = True		# Whether to use flood protection
+		self.floodrate = 2					# How often to send msgs with flood protection
+		self._clock_resolution = 1.0		# The tick clock's resolution
+		self._multithreaded = False			# Whether the object is multithreaded or not
+		self._show_input = False			# Whether to display incoming data or not
+		self._show_output = False			# Whether to display outgoing data or not
+		self._daemon = False				# Whether we daemonize the thread or not
+		self._uptime_resolution = 0.25		# The uptime clock's resolution
+		self._verify_hostname = False		# Whether to verify the server's hostname or not
+		self._verify_cert = False			# Whether to verify the server's certificate or not
+		self._client_cert = None			# The user's client certificate
+		self._client_key = None				# The user's client certificate key
+
+		# Handle configuration options
+		self.configure(**kwargs)
+
+		# Create the socket
+		self._client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+
+		# If SSL isn't available, and SSL is set to
+		# be used, raise an error
+		if not SSL_AVAILABLE:
+			if self.usessl:
+				self._display_error_and_exit(NO_SSL_ERROR)
+
+		self._buffer = ""						# Incoming data buffer
+		self._channels = []						# Channel list buffer
+		self._thread = None						# If multithreaded, stores the object's thread
+		self._whois = {}						# WHOIS data buffer
+		self._message_queue = []				# Outgoing message queue for flood protection
+		self._last_message_time = 0				# The time the last message was sent to the server
+		self._current_nickname = self.nickname	# Stores the current nickname (for 433 errors)
+
+		self.hostname = ""							# The server's hostname
+		self.software = ""							# The server's software
+		self.options = []							# The server's options
+		self.network = ""							# The IRC server's network
+		self.commands = []							# Commands the server supports
+		self.maxchannels = 0						# Maximum number of channels
+		self.maxnicklen = 0							# Maximum nick length
+		self.chanlimit = []							# Server channel limit
+		self.nicklen = 0							# Server nick length
+		self.chanellen = 0							# Server channel name length
+		self.topiclen = 0							# Server channel topic length
+		self.kicklen = 0							# Server kick length
+		self.awaylen = 0							# Server away length
+		self.maxtargets = 0							# Server maximum msg targets
+		self.modes = 0								# Server maximum channel modes
+		self.chantypes = []							# What channel types the server uses
+		self.prefix = []							# Server status prefixes
+		self.chanmodes = []							# What channel modes the server uses
+		self.casemapping = ""						# Server case mapping
+		self.spoofed = ""							# The client's spoofed host
+		self.users = defaultdict(list)				# List of channel users
+		self.topic = {}								# Channel topics
+		self.channels = []							# Server channel list
+		self.tags = []								# Object tags
+		self.uptime = 0								# Object uptime, in seconds
+		self.multithreaded = self._multithreaded	# If the object is multithreaded or not
+		self.certificate = None						# If using SSL/TLS, this is where the cert is stored
+
+	# configure()
+	# Arguments: key words
+	#
+	# Configures an Erkle object
+	def configure(self,**kwargs):
+
+		if self._started:
+			print("ERROR: "+CANNOT_BE_CONFIGURED)
+			sys.exit(1)
 
 		for key, value in kwargs.items():
+
+			if key=="certificate":
+				self._client_cert = value
+
+			if key=="key":
+				self._client_key = value
+
+			if key=="verify_host":
+				self._verify_hostname = value
+
+			if key=="verify_cert":
+				self._verify_cert = value
 
 			if key=="socket":
 				if value!=None:
@@ -86,7 +161,7 @@ class Erkle:
 			if key=='debug_input':
 				self._show_input = value
 
-			if key=='multithread':
+			if key=='multithreaded':
 				self._multithreaded = value
 
 			if key=='tick_frequency':
@@ -125,9 +200,6 @@ class Erkle:
 		if self.alternate==None: self.alternate = self.nickname + "_"
 		if self.username==None: self.username = self.nickname
 
-		# Create the socket
-		self._client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-
 		# Check to make sure all config input is the right variable type
 		self._check_configuration_input_type('nickname',self.nickname,str())
 		self._check_configuration_input_type('username',self.username,str())
@@ -142,6 +214,8 @@ class Erkle:
 		self._check_configuration_input_type('debug_input',self._show_input,bool())
 		self._check_configuration_input_type('debug_output',self._show_output,bool())
 		self._check_configuration_input_type('daemon',self._daemon,bool())
+		self._check_configuration_input_type('verify_host',self._verify_hostname,bool())
+		self._check_configuration_input_type('verify_cert',self._verify_cert,bool())
 
 		# Make sure flood_rate is an int or a float
 		if type(self.floodrate)!=type(int()):
@@ -149,13 +223,13 @@ class Erkle:
 				print("ERROR: "+WRONG_VARIABLE_TYPE.format(key='flood_rate',rec=intype,exp='float'))
 				sys.exit(1)
 
-		# Make sure clock_frequency is an int for a float
+		# Make sure clock_frequency is an int or a float
 		if type(self._clock_resolution)!=type(int()):
 			if type(self._clock_resolution)!=type(float()):
 				print("ERROR: "+WRONG_VARIABLE_TYPE.format(key='tick_frequency',rec=intype,exp='float'))
 				sys.exit(1)
 
-		# Make sure uptime_resolution is an int for a float
+		# Make sure clock_resolution is an int or a float
 		if type(self._uptime_resolution)!=type(int()):
 			if type(self._uptime_resolution)!=type(float()):
 				print("ERROR: "+WRONG_VARIABLE_TYPE.format(key='clock_resolution',rec=intype,exp='float'))
@@ -179,47 +253,51 @@ class Erkle:
 				print("ERROR: "+WRONG_VARIABLE_TYPE.format(key='password',rec=intype,exp='string'))
 				sys.exit(1)
 
-		# If SSL isn't available, and SSL is set to
-		# be used, raise an error
-		if not SSL_AVAILABLE:
-			if self.usessl:
-				self._display_error_and_exit(NO_SSL_ERROR)
+		# Check to make sure that the client_cert (if there is one) is a string
+		if self._client_cert!=None:
+			if type(self._client_cert)!=type(str):
 
-		self._buffer = ""						# Incoming data buffer
-		self._channels = []						# Channel list buffer
-		self._thread = None						# If multithreaded, stores the object's thread
-		self._whois = {}						# WHOIS data buffer
-		self._message_queue = []				# Outgoing message queue for flood protection
-		self._last_message_time = 0				# The time the last message was sent to the server
-		self._started = False					# Stores if the IRC connection has been started or not
-		self._current_nickname = self.nickname	# Stores the current nickname (for 433 errors)
+				if type(var)==type(str()):
+					intype = "string"
+				elif type(var)==type(int()):
+					intype = "integer"
+				elif type(var)==type(float()):
+					intype = "float"
+				elif type(var)==type(bool()):
+					intype = "boolean"
+				else:
+					intype = 'unknown'
 
-		self.hostname = ""							# The server's hostname
-		self.software = ""							# The server's software
-		self.options = []							# The server's options
-		self.network = ""							# The IRC server's network
-		self.commands = []							# Commands the server supports
-		self.maxchannels = 0						# Maximum number of channels
-		self.maxnicklen = 0							# Maximum nick length
-		self.chanlimit = []							# Server channel limit
-		self.nicklen = 0							# Server nick length
-		self.chanellen = 0							# Server channel name length
-		self.topiclen = 0							# Server channel topic length
-		self.kicklen = 0							# Server kick length
-		self.awaylen = 0							# Server away length
-		self.maxtargets = 0							# Server maximum msg targets
-		self.modes = 0								# Server maximum channel modes
-		self.chantypes = []							# What channel types the server uses
-		self.prefix = []							# Server status prefixes
-		self.chanmodes = []							# What channel modes the server uses
-		self.casemapping = ""						# Server case mapping
-		self.spoofed = ""							# The client's spoofed host
-		self.users = defaultdict(list)				# List of channel users
-		self.topic = {}								# Channel topics
-		self.channels = []							# Server channel list
-		self.tags = []								# Object tags
-		self.uptime = 0								# Object uptime, in seconds
-		self.multithreaded = self._multithreaded	# If the object is multithreaded or not
+				print("ERROR: "+WRONG_VARIABLE_TYPE.format(key='certificate',rec=intype,exp='string'))
+				sys.exit(1)
+
+			# Check to make sure the client cert file exists
+			if not os.path.isfile(self._client_cert):
+				print("ERROR: "+CANNOT_FIND_SSL_FILE.format(ftype='certificate',name=self._client_cert))
+				sys.exit(1)
+
+		# Check to make sure that the client_key (if there is one) is a string
+		if self._client_key!=None:
+			if type(self._client_key)!=type(str):
+
+				if type(var)==type(str()):
+					intype = "string"
+				elif type(var)==type(int()):
+					intype = "integer"
+				elif type(var)==type(float()):
+					intype = "float"
+				elif type(var)==type(bool()):
+					intype = "boolean"
+				else:
+					intype = 'unknown'
+
+				print("ERROR: "+WRONG_VARIABLE_TYPE.format(key='key',rec=intype,exp='string'))
+				sys.exit(1)
+
+			# Check to make sure the client cert file exists
+			if not os.path.isfile(self._client_key):
+				print("ERROR: "+CANNOT_FIND_SSL_FILE.format(ftype='key',name=self._client_key))
+				sys.exit(1)
 
 	# _run()
 	# Arguments: none
@@ -245,13 +323,39 @@ class Erkle:
 		# Raise the "start" event
 		irc.call("connecting",self)
 
+		## SSL-ify the connection if needed
+		if self.usessl:
+			self._ssl_context = ssl.create_default_context()
+
+			if self._verify_hostname:
+				self._ssl_context.check_hostname = True
+			else:
+				self._ssl_context.check_hostname = False
+
+			if self._verify_cert:
+				self._ssl_context.verify_mode = ssl.CERT_REQUIRED
+			else:
+				self._ssl_context.verify_mode = ssl.CERT_OPTIONAL
+
+			if self._client_cert!=None:
+				if self._client_key!=None:
+					self._ssl_context.load_cert_chain(certfile=self._client_cert, keyfile=self._client_key)
+				else:
+					self._display_error_and_exit(NO_KEY_ERROR.format(self._client_cert))
+			
+
+			if ssl.HAS_SNI:
+				self._client = self._ssl_context.wrap_socket(self._client,server_side=False,server_hostname=self.server)
+			else:
+				self._client = self._ssl_context.wrap_socket(self._client,server_side=False)
+
 		# Create the connection socket and connect to the server
 		# self._client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 		self._client.connect((self.server,self.port))
 
-		## SSL-ify the connection if needed
+		# Store the server's certificate, if we're using SSL
 		if self.usessl:
-			self._client = ssl.wrap_socket(self._client)
+			self.certificate = self._client.getpeercert()
 
 		# Raise the "connect" event
 		irc.call("connect",self)
@@ -566,6 +670,9 @@ class Erkle:
 	#
 	# Calls _run().
 	def connect(self):
+		if self._started:
+			self._raise_runtime_error(CONNECTION_IS_STARTED)
+
 		if self._multithreaded:
 			t = threading.Thread(name=f"{self.server}:{str(self.port)}",target=self._run)
 			if self._daemon: t.daemon = True

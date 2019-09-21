@@ -59,11 +59,16 @@ def parse_username(user):
 	ishalfop = False
 
 	parsed = user.split('!')
-	nickname = parsed[0]
-	hostmask = parsed[1]
-	parsed = hostmask.split('@')
-	username = parsed[0]
-	host = parsed[1]
+	if len(parsed)>1:
+		nickname = parsed[0]
+		hostmask = parsed[1]
+		parsed = hostmask.split('@')
+		username = parsed[0]
+		host = parsed[1]
+	else:
+		nickname = user
+		username = None
+		host = None
 
 	rawnick = ''
 	for c in nickname:

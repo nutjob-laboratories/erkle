@@ -23,7 +23,7 @@
 
 #--SINGLE_FILE--#
 APPLICATION_NAME = "Erkle"
-ERKLE_VERSION = "0.0511"
+ERKLE_VERSION = "0.061"
 
 DEFAULT_REALNAME = APPLICATION_NAME + " " + ERKLE_VERSION + " IRC Client"
 #--SINGLE_FILE--#
@@ -39,6 +39,11 @@ NOT_STARTED_ERROR = "Connection not started."
 WRONG_VARIABLE_TYPE = "Wrong variable type for '{key}' (received {rec}, expected {exp})."
 CANNOT_ADD_ASTERIX_TAG = "'*' is not a valid tag name."
 CANNOT_REMOVE_ASTERIX_TAG = "Can't remove '*' tag (not a valid tag name)."
+CANNOT_BE_CONFIGURED = "Can't call configure() while connected."
+CONNECTION_IS_STARTED = "Can't call connect(): already connected to an IRC server."
+NO_KEY_ERROR = "Client certificate '{}' is missing its key."
+CANNOT_FIND_SSL_FILE = "Can't find {ftype} file '{name}'."
+
 UNKNOWN_ERROR = "Unknown error"
 
 #--SINGLE_FILE--#
