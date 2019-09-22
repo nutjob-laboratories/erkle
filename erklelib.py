@@ -6,7 +6,7 @@
 #   \___|_|  |_|\_\_|\___|
 #
 # Erkle IRC Library
-# Version 0.061
+# Version 0.0611
 #
 # https://github.com/nutjob-laboratories/erkle
 
@@ -49,7 +49,7 @@ except ImportError:
 __all__ = ['irc','Erkle','ERKLE_VERSION']
 
 APPLICATION_NAME = "Erkle"
-ERKLE_VERSION = "0.061"
+ERKLE_VERSION = "0.0611"
 
 DEFAULT_REALNAME = APPLICATION_NAME + " " + ERKLE_VERSION + " IRC Client"
 
@@ -153,6 +153,7 @@ class Erkle:
 		self._verify_cert = False			# Whether to verify the server's certificate or not
 		self._client_cert = None			# The user's client certificate
 		self._client_key = None				# The user's client certificate key
+		self._cert_authority = None			# Certificate authority file
 
 		# Handle configuration options
 		self.configure(**kwargs)
@@ -213,6 +214,9 @@ class Erkle:
 			sys.exit(1)
 
 		for key, value in kwargs.items():
+
+			if key=="cert_authority":
+				self._cert_authority = value
 
 			if key=="certificate":
 				self._client_cert = value
@@ -378,6 +382,29 @@ class Erkle:
 				print("ERROR: "+CANNOT_FIND_SSL_FILE.format(ftype='key',name=self._client_key))
 				sys.exit(1)
 
+		# Check to make sure that the load_ca (if there is one) is a string
+		if self._cert_authority!=None:
+			if type(self._cert_authority)!=type(str):
+
+				if type(var)==type(str()):
+					intype = "string"
+				elif type(var)==type(int()):
+					intype = "integer"
+				elif type(var)==type(float()):
+					intype = "float"
+				elif type(var)==type(bool()):
+					intype = "boolean"
+				else:
+					intype = 'unknown'
+
+				print("ERROR: "+WRONG_VARIABLE_TYPE.format(key='cert_authority',rec=intype,exp='string'))
+				sys.exit(1)
+
+			# Check to make sure the client cert file exists
+			if not os.path.isfile(self._cert_authority):
+				print("ERROR: "+CANNOT_FIND_SSL_FILE.format(ftype='CA',name=self._cert_authority))
+				sys.exit(1)
+
 	# _run()
 	# Arguments: none
 	#
@@ -414,7 +441,7 @@ class Erkle:
 			if self._verify_cert:
 				self._ssl_context.verify_mode = ssl.CERT_REQUIRED
 			else:
-				self._ssl_context.verify_mode = ssl.CERT_OPTIONAL
+				self._ssl_context.verify_mode = ssl.CERT_NONE
 
 			if self._client_cert!=None:
 				if self._client_key!=None:
@@ -422,6 +449,8 @@ class Erkle:
 				else:
 					self._display_error_and_exit(NO_KEY_ERROR.format(self._client_cert))
 
+			if self._cert_authority!=None:
+				self._ssl_context.load_verify_locations(self._cert_authority)
 
 			if ssl.HAS_SNI:
 				self._client = self._ssl_context.wrap_socket(self._client,server_side=False,server_hostname=self.server)
