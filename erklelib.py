@@ -6,7 +6,7 @@
 #   \___|_|  |_|\_\_|\___|
 #
 # Erkle IRC Library
-# Version 0.0611
+# Version 0.0612
 #
 # https://github.com/nutjob-laboratories/erkle
 
@@ -49,7 +49,7 @@ except ImportError:
 __all__ = ['irc','Erkle','ERKLE_VERSION']
 
 APPLICATION_NAME = "Erkle"
-ERKLE_VERSION = "0.0611"
+ERKLE_VERSION = "0.0612"
 
 DEFAULT_REALNAME = APPLICATION_NAME + " " + ERKLE_VERSION + " IRC Client"
 
@@ -587,6 +587,18 @@ class Erkle:
 				irc.call("action",self,nickname,host,target,message)
 				return
 
+			# CTCP message
+			if "\x01" in message:
+				message = message[1:]	# strip delimiter
+				message = message[:-1]	# strip delimiter
+
+				parsed = message.split(' ')
+				if len(parsed)>=1:
+					command = parsed.pop(0)
+					data = ' '.join(parsed)
+					irc.call("ctcp",self,nickname,host,target,command,data)
+					return
+
 			if target.lower()==self.nickname.lower():
 				# private message
 				irc.call("private",self,nickname,host,message)
@@ -604,6 +616,19 @@ class Erkle:
 			parsed = " ".join(tokens).split(":")
 			sender = parsed[0].strip()
 			message = parsed[1].strip()
+
+			# CTCP reply
+			if "\x01" in message:
+				message = message[1:]	# strip delimiter
+				message = message[:-1]	# strip delimiter
+
+				parsed = message.split(' ')
+				if len(parsed)>=1:
+					command = parsed.pop(0)
+					data = ' '.join(parsed)
+					irc.call("ctcp-reply",self,sender,command,data)
+					return
+
 			irc.call("notice",self,sender,message)
 			return
 
@@ -885,6 +910,16 @@ class Erkle:
 
 		# Exit the thread, if we're running in a thread
 		if self._thread != None: sys.exit()
+
+	# ctcp()
+	# Arguments: string, string, string
+	#
+	# Sends a CTCP PRIVMSG/command to the IRC server
+	def ctcp(self,target,command,msg):
+		if type(target)==type(list()):
+			target = ",".join(target)
+		msg = "\x01" + command + " " + msg + "\x01"
+		self.send("PRIVMSG "+target+" :"+msg)
 
 	# privmsg()
 	# Arguments: string, string

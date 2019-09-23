@@ -173,3 +173,7 @@ def evj(connection,nickname,host,channel):
 @irc.event("joined", "erkle.events.dump")
 def evj(connection,channel):
 	print("You joined "+channel)
+
+@irc.event("ctcp")
+def fevent(connection,nickname,host,target,command,message):
+	print(target+" "+nickname+"("+host+") sent a CTCP message: "+command+" "+message)
