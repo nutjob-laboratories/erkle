@@ -27,6 +27,9 @@ import sys
 import threading
 import os
 
+import ipaddress
+import urllib.request
+
 SSL_AVAILABLE = True
 try:
 	import ssl
@@ -52,6 +55,11 @@ class Erkle:
 
 		self.nickname = nickname
 		self.server = server
+
+		# GET EXTERNAL IP ADDRESS
+		data = urllib.request.urlopen("http://myexternalip.com/raw").read()
+		self.external_ip = data.decode()
+		self.encoded_external_ip = int(ipaddress.IPv4Address(self.external_ip))
 
 		self._started = False				# Stores if the IRC connection has been started or not
 
@@ -734,6 +742,68 @@ class Erkle:
 			t.start()
 		else:
 			self._run()
+
+	def _dcc_chat_server(self,nickname,port):
+		ds = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		ds.bind(("0.0.0.0",port))
+		ds.listen(5)
+
+		connection,address = ds.accept()
+
+		connection.settimeout(60)
+
+		client_address = address[0]
+		client_port = address[1]
+		client_nickname = nickname
+
+		irc.call("dcc-chat-accept",self,client_nickname,client_address,client_port)
+
+		while True:
+			
+			try:
+				line = connection.recv(4096)
+
+				try:
+					# Attempt to decode with the selected encoding
+					line2 = line.decode(self.encoding)
+				except UnicodeDecodeError:
+					try:
+						# Attempt to decode with "latin1"
+						line2 = line.decode('iso-8859-1')
+					except UnicodeDecodeError:
+						# Finally, if nothing else works, use windows default encoding
+						line2 = line.decode("CP1252", 'replace')
+
+				line = line2
+			except:
+				connection.close()
+				sys.exit()
+
+			if len(line)==0:
+				irc.call("dcc-chat-end",self,client_nickname,client_address,client_port)
+				connection.close()
+				sys.exit()
+				break
+
+			line = line.replace("\n","")
+			line = line.replace("\r","")
+
+			if len(line)>0:
+				#print(client_nickname+" DCC-> "+line)
+				irc.call("dcc-chat",self,client_nickname,client_address,client_port,line)
+
+
+	def dccchat(self,nickname,port,host_ip=None):
+		if host_ip != None:
+			addy = int(ipaddress.IPv4Address(host_ip))
+		else:
+			addy = self.encoded_external_ip
+
+
+		t = threading.Thread(target=self._dcc_chat_server,args=(nickname,port))
+		t.start()
+
+		self.privmsg(nickname,"\x01DCC CHAT chat "+str(addy)+" "+str(port)+"\x01")
 
 	# thread()
 	# Arguments: none
