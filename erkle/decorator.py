@@ -53,7 +53,12 @@ class EventHandler:
 				for t in h.tags:
 					if t in self._disabled: nogo=True
 				if not nogo:
-					if DOIT: h.function(eobj,*args)
+					if DOIT:
+						retval = h.function(eobj,*args)
+						# If the event function returns a value, then
+						# return it here
+						if retval:
+							return retval
 
 	def event(self, event, *args):
 		def registerhandler(handler):
