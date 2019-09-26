@@ -6,7 +6,7 @@
 #   \___|_|  |_|\_\_|\___|
 #
 # Erkle IRC Library
-# Version 0.0621
+# Version 0.0622
 #
 # https://github.com/nutjob-laboratories/erkle
 
@@ -49,7 +49,7 @@ except ImportError:
 __all__ = ['irc','Erkle','ERKLE_VERSION']
 
 APPLICATION_NAME = "Erkle"
-ERKLE_VERSION = "0.0621"
+ERKLE_VERSION = "0.0622"
 
 DEFAULT_REALNAME = APPLICATION_NAME + " " + ERKLE_VERSION + " IRC Client"
 
@@ -99,7 +99,12 @@ class EventHandler:
 				for t in h.tags:
 					if t in self._disabled: nogo=True
 				if not nogo:
-					if DOIT: h.function(eobj,*args)
+					if DOIT:
+						retval = h.function(eobj,*args)
+						# If the event function returns a value, then
+						# return it here
+						if retval:
+							return retval
 
 	def event(self, event, *args):
 		def registerhandler(handler):
@@ -132,11 +137,6 @@ class Erkle:
 		self.nickname = nickname
 		self.server = server
 
-		# GET EXTERNAL IP ADDRESS
-		data = urllib.request.urlopen("http://myexternalip.com/raw").read()
-		self.external_ip = data.decode()
-		self.encoded_external_ip = int(ipaddress.IPv4Address(self.external_ip))
-
 		self._started = False				# Stores if the IRC connection has been started or not
 
 		self.port = 6667					# The server's port
@@ -159,6 +159,12 @@ class Erkle:
 		self._client_cert = None			# The user's client certificate
 		self._client_key = None				# The user's client certificate key
 		self._cert_authority = None			# Certificate authority file
+
+		self._fetch_external_ip = False
+		self.external_ip = "127.0.0.1"
+		self.encoded_external_ip = int(ipaddress.IPv4Address(self.external_ip))
+
+		self._external_ip_source = "http://myexternalip.com/raw"
 
 		# Handle configuration options
 		self.configure(**kwargs)
@@ -221,6 +227,16 @@ class Erkle:
 			sys.exit(1)
 
 		for key, value in kwargs.items():
+
+			if key=="external_ip":
+				self.external_ip = value
+				self.encoded_external_ip = int(ipaddress.IPv4Address(self.external_ip))
+
+			if key=="external_ip_source":
+				self._external_ip_source = value
+
+			if key=="fetch_external_ip":
+				self._fetch_external_ip = value
 
 			if key=="cert_authority":
 				self._cert_authority = value
@@ -411,6 +427,12 @@ class Erkle:
 			if not os.path.isfile(self._cert_authority):
 				print("ERROR: "+CANNOT_FIND_SSL_FILE.format(ftype='CA',name=self._cert_authority))
 				sys.exit(1)
+
+		# GET EXTERNAL IP ADDRESS
+		if self._fetch_external_ip:
+			data = urllib.request.urlopen(self._external_ip_source).read()
+			self.external_ip = data.decode()
+			self.encoded_external_ip = int(ipaddress.IPv4Address(self.external_ip))
 
 	# _run()
 	# Arguments: none
@@ -1245,7 +1267,7 @@ class Clock(threading.Thread):
 class DCC_Chat_Socket:
 	def __init__(self,clientid,socket):
 		self.id = clientid
-		self.socket=socket
+		self.socket = socket
 
 class ChannelData:
 	def __init__(self,name,usercount,topic):

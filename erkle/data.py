@@ -25,7 +25,7 @@
 class DCC_Chat_Socket:
 	def __init__(self,clientid,socket):
 		self.id = clientid
-		self.socket=socket
+		self.socket = socket
 
 class ChannelData:
 	def __init__(self,name,usercount,topic):
