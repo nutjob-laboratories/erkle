@@ -26,6 +26,7 @@ import string
 import sys
 import threading
 import os
+import random
 
 import ipaddress
 import urllib.request
@@ -41,6 +42,7 @@ from erkle.information import handle_information
 from erkle.users import handle_users
 from erkle.errors import handle_errors
 from erkle.clock import Uptimer,Clock
+from erkle.data import DCC_Chat_Socket
 from erkle.common import *
 
 #--SINGLE_FILE--#
@@ -103,6 +105,8 @@ class Erkle:
 		self._message_queue = []				# Outgoing message queue for flood protection
 		self._last_message_time = 0				# The time the last message was sent to the server
 		self._current_nickname = self.nickname	# Stores the current nickname (for 433 errors)
+		self._dcc_chat_sockets = []				# DCC chat socket storage
+		self._dcc_client_ids = []				# DCC chat client ids in use
 
 		self.hostname = ""							# The server's hostname
 		self.software = ""							# The server's software
@@ -743,12 +747,70 @@ class Erkle:
 		else:
 			self._run()
 
-	def _dcc_chat_server(self,nickname,port):
+	def closechat(self,clientid):
+
+		dccsock = None
+		for c in self._dcc_chat_sockets:
+			if c.id == clientid:
+				dccsock = c.socket
+
+		if dccsock==None: return False
+
+		dccsock.shutdown(socket.SHUT_RDWR)
+		dccsock.close()
+
+		clean = []
+		for c in self._dcc_chat_sockets:
+			if c.id == clientid: continue
+			clean.append(c)
+		self._dcc_chat_sockets = clean
+		try:
+			self._dcc_client_ids.remove(clientid)
+		except:
+			pass
+
+		return True
+
+
+	def chat(self,clientid,data):
+
+		dccsock = None
+		for c in self._dcc_chat_sockets:
+			if c.id == clientid:
+				dccsock = c.socket
+
+		if dccsock==None: return
+
+		sender = getattr(dccsock, 'write', dccsock.send)
+		try:
+			sender(bytes(data + "\r\n", self.encoding))
+		except socket.error:
+			print(SEND_MESSAGE_ERROR)
+
+			# Shutdown the connection and exit
+			dccsock.shutdown(socket.SHUT_RDWR)
+			dccsock.close()
+
+			clean = []
+			for c in self._dcc_chat_sockets:
+				if c.id == clientid: continue
+				clean.append(c)
+			self._dcc_chat_sockets = clean
+			try:
+				self._dcc_client_ids.remove(clientid)
+			except:
+				pass
+
+
+	def _dcc_chat_server(self,nickname,port,clientid):
 		ds = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		ds.bind(("0.0.0.0",port))
 		ds.listen(5)
 
 		connection,address = ds.accept()
+
+		chatter = DCC_Chat_Socket(clientid,connection)
+		self._dcc_chat_sockets.append(chatter)
 
 		connection.settimeout(60)
 
@@ -756,7 +818,7 @@ class Erkle:
 		client_port = address[1]
 		client_nickname = nickname
 
-		irc.call("dcc-chat-accept",self,client_nickname,client_address,client_port)
+		irc.call("dcc-chat-accept",self,client_nickname,client_address,client_port,clientid)
 
 		while True:
 			
@@ -777,11 +839,31 @@ class Erkle:
 				line = line2
 			except:
 				connection.close()
+				clean = []
+				for c in self._dcc_chat_sockets:
+					if c.id == clientid: continue
+					clean.append(c)
+				self._dcc_chat_sockets = clean
+				try:
+					self._dcc_client_ids.remove(clientid)
+				except:
+					pass
 				sys.exit()
 
 			if len(line)==0:
-				irc.call("dcc-chat-end",self,client_nickname,client_address,client_port)
+				irc.call("dcc-chat-end",self,client_nickname,client_address,client_port,clientid)
 				connection.close()
+
+				clean = []
+				for c in self._dcc_chat_sockets:
+					if c.id == clientid: continue
+					clean.append(c)
+				self._dcc_chat_sockets = clean
+				try:
+					self._dcc_client_ids.remove(clientid)
+				except:
+					pass
+
 				sys.exit()
 				break
 
@@ -790,7 +872,7 @@ class Erkle:
 
 			if len(line)>0:
 				#print(client_nickname+" DCC-> "+line)
-				irc.call("dcc-chat",self,client_nickname,client_address,client_port,line)
+				irc.call("dcc-chat",self,client_nickname,clientid,line)
 
 
 	def dccchat(self,nickname,port,host_ip=None):
@@ -799,11 +881,19 @@ class Erkle:
 		else:
 			addy = self.encoded_external_ip
 
+		cid = random.randint(1,50000)
+		while cid in self._dcc_client_ids:
+			cid = random.randint(1,50000)
 
-		t = threading.Thread(target=self._dcc_chat_server,args=(nickname,port))
+		self._dcc_client_ids.append(cid)
+
+		t = threading.Thread(target=self._dcc_chat_server,args=(nickname,port,cid))
 		t.start()
 
 		self.privmsg(nickname,"\x01DCC CHAT chat "+str(addy)+" "+str(port)+"\x01")
+
+		return cid
+
 
 	# thread()
 	# Arguments: none

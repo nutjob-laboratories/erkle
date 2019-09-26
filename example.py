@@ -26,12 +26,15 @@ import erkle.events.dump
 
 import sys
 
+CLIENT_ID = 0
+
 print("Example bot for Erkle "+ERKLE_VERSION)
 
 @irc.event("private")
 def fevent(connection,nickname,host,message):
 	if message.lower().strip()=="chat":
-		connection.dccchat(nickname,20000,"127.0.0.1")
+		global CLIENT_ID
+		CLIENT_ID = connection.dccchat(nickname,20000,"127.0.0.1")
 
 @irc.event("private")
 def fevent(connection,nickname,host,message):
@@ -61,16 +64,17 @@ def fevent(connection):
 
 
 @irc.event("dcc-chat-accept")
-def fevent(connection,nickname,address,port):
+def fevent(connection,nickname,address,port,clientid):
 	print("DCC chat connected to "+nickname+" ("+address+":"+str(port)+")")
 
 @irc.event("dcc-chat-end")
-def fevent(connection,nickname,address,port):
+def fevent(connection,nickname,address,port,clientid):
 	print("DCC chat disconnected from "+nickname+" ("+address+":"+str(port)+")")
 
 @irc.event("dcc-chat")
-def fevent(connection,nickname,address,port,message):
-	print("DCC "+nickname+" ("+address+":"+str(port)+"): "+message)
+def fevent(connection,nickname,clientid,message):
+	print("DCC "+nickname+": "+message)
+	connection.closechat(CLIENT_ID)
 
 
 c = Erkle("erklebot","localhost",port=6667,username="erklebot",realname='erkle bot',alternate='erk1eb0t',
