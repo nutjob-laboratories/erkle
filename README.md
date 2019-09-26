@@ -31,6 +31,9 @@
 * [collections](https://docs.python.org/3/library/collections.html)
 * [string](https://docs.python.org/3/library/string.html)
 * [threading](https://docs.python.org/3/library/threading.html)
+* [random](https://docs.python.org/3/library/random.html)
+* [ipaddress](https://docs.python.org/3/library/ipaddress.html)
+* [urllib.request](https://docs.python.org/3/library/urllib.request.html)
 * [ssl](https://docs.python.org/3/library/ssl.html) (optional)
 
 **Erkle** uses, with one exception, only modules from the standary Python library. The [`ssl`](https://docs.python.org/3/library/ssl.html) library is only necessary if you want to connected to an IRC server via SSL/TLS. To use the `ssl` module, the OpenSSL library must be installed. The easiest way to install this library is to use [`pip`](https://pypi.org/project/pip/) to install the [`pyOpenSSL`](https://www.pyopenssl.org/) library:
