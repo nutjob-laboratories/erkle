@@ -47,49 +47,33 @@ A partyline bot for IRC
 Copyright (C) 2019  Dan Hetrick
 """)
 
-parser.add_argument('clserver', metavar='SERVER', type=str, nargs='?', help='Server to connect to on startup', default="")
-parser.add_argument('clport', metavar='PORT', type=int, nargs='?', help='Port (6667)', default=6667)
+parser.add_argument('server', metavar='SERVER', type=str, nargs='?', help='Server to connect to on startup', default="")
+parser.add_argument('port', metavar='PORT', type=int, nargs='?', help='Port (6667)', default=6667)
+parser.add_argument( "-s","--ssl", help=f"Use SSL/TLS to connect", action="store_true")
+parser.add_argument("-n","--nickname", type=str,help="The nickname to use (\"erkleparty\")",default="erkleparty")
+parser.add_argument("-u","--username", type=str,help="The username to use (\"erkleparty\")",default="erkleparty")
+parser.add_argument("-r","--realname", type=str,help="The real name to use (\"Erkle Partyline Bot\")",default="Erkle Partyline Bot")
+parser.add_argument("-a","--alternate", metavar='NICKNAME', type=str,help="Alternate nickname (\"erk1ep4rty\")",default="erk1ep4rty")
+parser.add_argument( "-v","--verbose", help=f"Verbose mode", action="count")
 parser.add_argument("--minimum", type=int,help="Lowest assigned port number (10000)",default=10000)
 parser.add_argument("--maximum", type=int,help="Highest assigned port number (60000)",default=60000)
 parser.add_argument("--name", type=str,help="The partyline's displayed name (\"Partyline\")",default="Partyline")
-parser.add_argument("-n","--nickname", type=str,help="The nickname to use (\"erkleparty\")",default="erkleparty")
-parser.add_argument( "-v","--verbose", help=f"Verbose mode", action="store_true")
-parser.add_argument("--default", type=str,help="The partyline's default channel (\"#lobby\")",default="#lobby")
+parser.add_argument("--default", metavar='CHANNEL', type=str,help="The partyline's default channel (\"#lobby\")",default="#lobby",dest="default_channel")
 parser.add_argument('-c','--channel', action='append', help="Add a channel to join")
-parser.add_argument("--command", type=str,help="Partyline command prefix",default=".")
+parser.add_argument("--command", type=str,help="Partyline command prefix (.)",default=".")
+
 
 args = parser.parse_args()
 
-if len(args.clserver)==0:
+if len(args.server)==0:
 	print("No server!")
 	sys.exit(1)
-else:
-	IRC_SERVER = args.clserver
-
-if args.verbose:
-	import erkle.events.dump
 
 PARTYLINE_COMMAND_TRIGGER	= args.command+PARTYLINE_COMMAND_TRIGGER
 HELP_COMMAND_TRIGGER		= args.command+HELP_COMMAND_TRIGGER
 LIST_COMMAND_TRIGGER		= args.command+LIST_COMMAND_TRIGGER
 JOIN_COMMAND_TRIGGER		= args.command+JOIN_COMMAND_TRIGGER
 QUIT_COMMAND_TRIGGER		= args.command+QUIT_COMMAND_TRIGGER
-
-DEFAULT_PARTYLINE_CHANNEL = args.default
-
-IRC_PORT = args.clport
-
-PORT_NUMBER_MINIMUM = args.minimum
-PORT_NUMBER_MAXIMUM = args.maximum
-
-PARTYLINE_NAME = args.name
-
-BOT_NICKNAME = args.nickname
-
-if args.channel:
-	CHANNELS_TO_JOIN = args.channel
-else:
-	CHANNELS_TO_JOIN = args.channel = []
 
 # =============
 # | VARIABLES |
@@ -119,15 +103,15 @@ def fevent(connection,nickname,host,message):
 @irc.event("dcc-chat-accept")
 def fevent(connection,nickname,address,port,clientid):
 	# Add the user to the list of partyline users
-	u = LineUser(nickname,address,port,clientid,DEFAULT_PARTYLINE_CHANNEL)
+	u = LineUser(nickname,address,port,clientid,args.default_channel)
 	PARTYLINE_USERS.append(u)
 
 	# Welcome the new user to the partyline
-	connection.chat(clientid,"Welcome to "+PARTYLINE_NAME+"!")
-	connection.chat(clientid,"You have joined "+DEFAULT_PARTYLINE_CHANNEL)
+	connection.chat(clientid,"Welcome to "+args.name+"!")
+	connection.chat(clientid,"You have joined "+args.default_channel)
 
 	# Notify everyone that the user has joined the partyline
-	broadcast(connection,clientid,DEFAULT_PARTYLINE_CHANNEL,nickname+" has connected to the partyline")
+	broadcast(connection,clientid,args.default_channel,nickname+" has connected to the partyline")
 
 # A user has disconnected from the partyline
 @irc.event("dcc-chat-end")
@@ -167,7 +151,7 @@ def fevent(connection,nickname,clientid,message):
 	# Lists all available commands
 	if len(tokens)==1:
 		if tokens[0].lower()==HELP_COMMAND_TRIGGER.lower():
-			connection.chat(clientid,PARTYLINE_NAME+" Commands")
+			connection.chat(clientid,args.name+" Commands")
 			connection.chat(clientid,LIST_COMMAND_TRIGGER+" - Lists all users connected")
 			connection.chat(clientid,QUIT_COMMAND_TRIGGER+" - Disconnects from the partyline")
 			connection.chat(clientid,JOIN_COMMAND_TRIGGER+" CHANNEL - Joins a new channel")
@@ -224,8 +208,9 @@ def fevent(connection,nickname,clientid,message):
 # Join the #erklelib channel on connection to IRC
 @irc.event("registered")
 def fevent(connection):
-	for channel in CHANNELS_TO_JOIN:
-		connection.join(channel)
+	if args.channel:
+		for channel in args.channel:
+			connection.join(channel)
 
 # =====================
 # | SUPPORT FUNCTIONS |
@@ -248,14 +233,14 @@ def broadcast(connection,clientid,channel,message):
 def get_channel(clientid):
 	for user in PARTYLINE_USERS:
 		if user.id == clientid: return user.channel
-	return DEFAULT_PARTYLINE_CHANNEL
+	return args.default_channel
 
 # generate_port()
 # Generates an unused port number
 def generate_port():
 	while True:
 		used = False
-		rport = random.randint(PORT_NUMBER_MINIMUM,PORT_NUMBER_MAXIMUM)
+		rport = random.randint(args.minimum,args.maximum)
 		for p in USED_PORTS:
 			if p.port == rport: used = True
 		if used:
@@ -318,6 +303,17 @@ class PortInfo:
 
 if __name__ == "__main__":
 
+	if args.verbose>=1:
+		DISPLAY_INCOMING = True
+	else:
+		DISPLAY_INCOMING = False
+
+	if args.verbose>=2:
+		DISPLAY_OUTGOING = True
+	else:
+		DISPLAY_OUTGOING = False
+
 	# Create the Erkle object and connect to IRC
-	c = Erkle(BOT_NICKNAME,IRC_SERVER,port=IRC_PORT)
+	c = Erkle(args.nickname,args.server,port=args.port,username=args.username,realname=args.realname,alternate=args.alternate,ssl=args.ssl,
+		debug_input=DISPLAY_INCOMING,debug_output=DISPLAY_OUTGOING)
 	c.connect()
