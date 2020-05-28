@@ -456,8 +456,11 @@ class Erkle:
 				self._stop_clocks.set()
 
 				# Shutdown the connection
-				self._client.shutdown(socket.SHUT_RDWR)
-				self._client.close()
+				try:
+					self._client.shutdown(socket.SHUT_RDWR)
+					self._client.close()
+				except:
+					pass
 				return
 
 			# Step through the buffer and look for newlines

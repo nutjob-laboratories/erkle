@@ -185,8 +185,14 @@ def handle_users(eobj,line):
 
 		if target==eobj.nickname:
 			# client was the one kicked
-			del eobj.users[channel]
-			del eobj.topic[channel]
+			try:
+				del eobj.users[channel]
+			except:
+				pass
+			try:
+				del eobj.topic[channel]
+			except:
+				pass
 			irc.call("kicked",eobj,nickname,host,channel,msg)
 		else:
 			# other user kicked
@@ -333,8 +339,14 @@ def handle_users(eobj,line):
 
 		if nickname == eobj.nickname:
 			# client parted
-			del eobj.users[channel]
-			del eobj.topic[channel]
+			try:
+				del eobj.users[channel]
+			except:
+				pass
+			try:
+				del eobj.topic[channel]
+			except:
+				pass
 			irc.call("parted",eobj,channel)
 			return
 
@@ -343,7 +355,7 @@ def handle_users(eobj,line):
 		cleaned = []
 		for u in eobj.users[channel]:
 			if u.nickname==nickname: continue
-			cleaned.append(cuser)
+			cleaned.append(u)
 		eobj.users[channel] = cleaned
 
 		# Resend the new channel user list
