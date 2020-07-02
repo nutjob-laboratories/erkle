@@ -80,6 +80,7 @@ class Erkle:
 		self._client_cert = None			# The user's client certificate
 		self._client_key = None				# The user's client certificate key
 		self._cert_authority = None			# Certificate authority file
+		self._initial_nickname = nickname	# The nickname the bot was created with
 
 		self._fetch_external_ip = False
 		self.external_ip = "127.0.0.1"
@@ -966,6 +967,13 @@ class Erkle:
 				self._message_queue.append(data)
 		else:
 			self._send(data)
+
+	# nick()
+	# Arguments: string
+	#
+	# Changes nickname
+	def nick(self,newnick):
+		self.send("NICK "+newnick)
 
 	# oper()
 	# Arguments: string, string
